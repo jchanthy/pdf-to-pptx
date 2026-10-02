@@ -795,6 +795,16 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'លាៃ\s*បី[˜~]*ត|លាៃបី[˜~]*ត|លាៃបីត'), 'លានប៊ីត'),
     (re.compile(r'លាៃ(?=\s*បី|បី)'), 'លាន'),
     (re.compile(r'បី[˜~]+ត'), 'ប៊ីត'),
+    # Security and Mixed Limon font phrases:
+    (re.compile(r'សុវ\s*តិថ\s*ភាព|សុវតិថភាព'), 'សុវត្ថិភាព'),
+    (re.compile(r'សុវ\s*តិថ|សុវតិថ|សុវ\s*តិ|សុវតិ'), 'សុវត្ថិ'),
+    (re.compile(r'P\s*ម\s*P\s*េះ|PមPេះ|PមP\s*េះ'), 'មេរៀននេះ'),
+    (re.compile(r'មយើ\s*R\s*P\s*ឹ\s*R|មយើRPឹR|មយើ\s*R\s*PឹR'), 'យើងនឹង'),
+    (re.compile(r'មយើ\s*R|មយើR'), 'យើង'),
+    (re.compile(r'P\s*ឹ\s*R|PឹR'), 'នឹង'),
+    (re.compile(r'សិ\s*ñ\s*ា|សិñា'), 'សិក្សា'),
+    (re.compile(r'ចំ\s*6\s*ុច|ចំ6ុច'), 'ចំណុច'),
+    (re.compile(r'ខា\s*R\s*ក្រោម|ខាRក្រោម|ខា\s*R|ខាR'), 'ខាងក្រោម'),
 ]
 
 
