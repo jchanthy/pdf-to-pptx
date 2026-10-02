@@ -1,44 +1,44 @@
 export const translations = {
   en: {
     app_title: "Khmer DocFixer",
-    app_subtitle: "PDF-to-PPTX Unicode Restorer",
-    tagline: "Restore legacy Limon/ABC fonts and garbled Khmer text in PowerPoint slides into standard Khmer Unicode, with optional PDF alignment and AI assistance.",
+    app_subtitle: "PPTX Khmer Spelling & Unicode Corrector",
+    tagline: "Upload your PowerPoint presentation (.pptx) to check and correct Khmer spelling and corrupted characters based on the official Chuon Nath dictionary.",
     
     // Steps
-    step_upload: "Upload Files",
-    step_preview: "Preview & Review",
+    step_upload: "Upload Presentation",
+    step_preview: "Review Spelling",
     step_download: "Download PPTX",
     
     // Upload Zone
-    upload_pdf_title: "Upload PDF Document",
-    upload_pdf_desc: "Select or drag & drop your PDF file to convert into PowerPoint with verified Khmer Unicode spelling",
+    upload_pptx_title: "Upload PowerPoint Presentation",
+    upload_pptx_desc: "Select or drag & drop your PowerPoint presentation (.pptx) to check and correct Khmer spelling",
     target_pptx_title: "Target PPTX File",
-    target_pptx_desc: "Corrupted or legacy font presentation (.pptx)",
+    target_pptx_desc: "PowerPoint presentation (.pptx) to check and restore",
     reference_pdf_title: "Reference PDF Document",
     reference_pdf_desc: "Optional clean Unicode reference file (.pdf)",
-    drag_drop_hint: "Drag and drop your file here, or click to browse",
-    drag_drop_replace: "Click or drag to replace",
-    file_selected: "Selected file",
+    drag_drop_hint: "Drag and drop your .pptx file here, or click to browse",
+    drag_drop_replace: "Click or drag to replace file",
+    file_selected: "Selected presentation",
     
     // Options
-    options_title: "Processing Settings",
+    options_title: "Spelling & Typography Settings",
     output_font_label: "Target Khmer Font",
-    output_font_desc: "All Khmer text runs in slides will be formatted with this typeface",
-    mode_label: "Restoration Engine Mode",
-    mode_auto: "Smart Auto (Dictionary + Heuristic + PDF + Font Translit)",
+    output_font_desc: "All Khmer text runs in slides will be formatted with this clean Unicode typeface",
+    mode_label: "Spelling Correction Engine",
+    mode_auto: "Smart Auto (Chuon Nath Dictionary + Consonant Matching + Heuristics)",
     mode_pdf: "PDF-Assisted Alignment (Match Slide N to PDF Page N)",
-    mode_dict: "Dictionary & Heuristics Only (Fast Offline)",
+    mode_dict: "Official Dictionary Only (Fast Offline)",
     mode_gemini: "AI Restorer (Google Gemini Multilingual Intelligence)",
     
     gemini_key_title: "Google Gemini API Key (Optional)",
     gemini_key_placeholder: "AIzaSy...",
-    gemini_key_desc: "Used for deep contextual semantic restoration of heavily broken Khmer glyphs",
+    gemini_key_desc: "Used for deep contextual semantic restoration of heavily broken Khmer words",
     
-    btn_start_processing: "Start Unicode Restoration",
-    btn_convert_pdf: "Convert PDF to PPTX & Fix Spelling",
-    btn_processing: "Analyzing Slides & Aligning...",
+    btn_start_processing: "Check & Correct Khmer Spelling",
+    btn_convert_pdf: "Check & Correct Khmer Spelling",
+    btn_processing: "Checking Spelling & Restoring Unicode...",
     btn_load_sample: "Load Demo Sample (1-Click Test)",
-    pdf_only_hint: "You can upload ONLY a PDF to generate editable PowerPoint slides with Chuon Nath spellcheck.",
+    pdf_only_hint: "Upload a PowerPoint presentation (.pptx) to inspect and correct all Khmer words against the dictionary.",
     
     // Preview / Review
     stats_slides: "Slides Analyzed",
@@ -104,44 +104,44 @@ export const translations = {
   },
   km: {
     app_title: "Khmer DocFixer",
-    app_subtitle: "កម្មវិធីជួសជុលអក្សរខ្មែរ យូនីកូដ (PDF-to-PPTX)",
-    tagline: "ជួសជុលពុម្ពអក្សរចាស់ Limon/ABC និងអក្សរខ្មែរខូច (Garbled Text) ក្នុងស្លាយ PowerPoint មកជាយូនីកូដស្ដង់ដារ ដោយផ្ទៀងផ្ទាត់ជាមួយ PDF យោង និងប្រព័ន្ធវៃឆ្លាត AI។",
+    app_subtitle: "កម្មវិធីពិនិត្យ និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរក្នុង PowerPoint (PPTX)",
+    tagline: "ផ្ទុកឡើងឯកសារ PowerPoint (PPTX) ដើម្បីពិនិត្យ និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរខូច ឬពុម្ពអក្សរចាស់ ឱ្យត្រឹមត្រូវ ១០០% ផ្អែកលើវចនានុក្រមភាសាខ្មែរ សម្ដេចសង្ឃរាជ ជួន ណាត។",
     
     // Steps
-    step_upload: "១. ផ្ទុកឡើងឯកសារ",
-    step_preview: "២. ពិនិត្យ និង ផ្ទៀងផ្ទាត់",
+    step_upload: "១. ផ្ទុកឡើងឯកសារ PPTX",
+    step_preview: "២. ពិនិត្យ និង ផ្ទៀងផ្ទាត់ពាក្យ",
     step_download: "៣. ទាញយកឯកសារកែរួច",
     
     // Upload Zone
-    upload_pdf_title: "ផ្ទុកឡើងឯកសារ PDF",
-    upload_pdf_desc: "ជ្រើសរើស ឬទម្លាក់ឯកសារ PDF របស់អ្នក ដើម្បីបំប្លែងទៅជា PowerPoint ជាមួយអក្ខរាវិរុទ្ធភាសាខ្មែរត្រឹមត្រូវ ១០០%",
-    target_pptx_title: "ឯកសារ PPTX គោលដៅ (អក្សរខូច ឬ ហ្វុនចាស់)",
-    target_pptx_desc: "ឯកសារ PowerPoint ដែលមានអក្សរខូច ឬ ប្រើពុម្ពអក្សរ Limon/ABC (.pptx)",
+    upload_pptx_title: "ផ្ទុកឡើងឯកសារ PowerPoint (.pptx)",
+    upload_pptx_desc: "ជ្រើសរើស ឬទម្លាក់ឯកសារ .pptx របស់អ្នកដើម្បីពិនិត្យ និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរ",
+    target_pptx_title: "ឯកសារ PPTX គោលដៅ",
+    target_pptx_desc: "ឯកសារ PowerPoint ដែលត្រូវពិនិត្យ និងកែអក្ខរាវិរុទ្ធ (.pptx)",
     reference_pdf_title: "ឯកសារ PDF យោង (ជម្រើសបន្ថែម)",
     reference_pdf_desc: "ឯកសារ PDF ដែលមានអក្សរយូនីកូដស្អាត សម្រាប់ផ្ទៀងផ្ទាត់ (.pdf)",
-    drag_drop_hint: "អូសទម្លាក់ឯកសាររបស់អ្នកមកទីនេះ ឬ ចុចដើម្បីជ្រើសរើស",
+    drag_drop_hint: "អូសទម្លាក់ឯកសារ .pptx របស់អ្នកមកទីនេះ ឬ ចុចដើម្បីជ្រើសរើស",
     drag_drop_replace: "ចុច ឬ អូសទម្លាក់ដើម្បីប្តូរឯកសារ",
     file_selected: "ឯកសារដែលបានជ្រើសរើស",
     
     // Options
-    options_title: "ការកំណត់ការកែសម្រួល",
+    options_title: "ការកំណត់ការកែអក្ខរាវិរុទ្ធ និងពុម្ពអក្សរ",
     output_font_label: "ពុម្ពអក្សរខ្មែរគោលដៅ",
-    output_font_desc: "រាល់អក្សរខ្មែរនៅក្នុងស្លាយនឹងត្រូវកំណត់ទៅពុម្ពអក្សរនេះ",
-    mode_label: "របៀបដំណើរការម៉ាស៊ីនជួសជុល",
-    mode_auto: "វៃឆ្លាតស្វ័យប្រវត្ត (វចនានុក្រម + Heuristic + PDF + Limon)",
+    output_font_desc: "រាល់អក្សរខ្មែរនៅក្នុងស្លាយនឹងត្រូវកំណត់ទៅពុម្ពអក្សរយូនីកូដនេះ",
+    mode_label: "ម៉ាស៊ីនកែអក្ខរាវិរុទ្ធ",
+    mode_auto: "វៃឆ្លាតស្វ័យប្រវត្ត (វចនានុក្រម ជួន ណាត + ផ្គូផ្គងព្យញ្ជនៈ + Heuristic)",
     mode_pdf: "ផ្ទៀងផ្ទាត់ជាមួយ PDF (ផ្គូផ្គងស្លាយ N ជាមួយទំព័រ PDF N)",
-    mode_dict: "វចនានុក្រម និង ក្បួនវេយ្យាករណ៍ (ដំណើរការលឿន មិនបាច់អ៊ីនធឺណិត)",
+    mode_dict: "វចនានុក្រមផ្លូវការ (ដំណើរការលឿន មិនបាច់អ៊ីនធឺណិត)",
     mode_gemini: "ជំនួយការ AI (Google Gemini ស្ដារអត្ថន័យ និងវេយ្យាករណ៍កម្រិតខ្ពស់)",
     
     gemini_key_title: "Google Gemini API Key (ជម្រើសបន្ថែម)",
     gemini_key_placeholder: "AIzaSy...",
     gemini_key_desc: "ប្រើសម្រាប់វិភាគពាក្យបច្ចេកទេស និងកែពាក្យខូចខ្លាំងដែលគ្មានក្នុងវចនានុក្រម",
     
-    btn_start_processing: "ចាប់ផ្ដើមជួសជុលអក្សរយូនីកូដ",
-    btn_convert_pdf: "បំប្លែង PDF ទៅជា PPTX និងកែអក្ខរាវិរុទ្ធ",
-    btn_processing: "កំពុងវិភាគស្លាយ និង ផ្គូផ្គងពាក្យ...",
+    btn_start_processing: "ពិនិត្យ និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរ",
+    btn_convert_pdf: "ពិនិត្យ និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរ",
+    btn_processing: "កំពុងពិនិត្យអក្ខរាវិរុទ្ធ និងផ្ទៀងផ្ទាត់វចនានុក្រម...",
     btn_load_sample: "សាកល្បងឯកសារគំរូ (១ ចុច)",
-    pdf_only_hint: "លោកអ្នកអាចផ្ទុកឡើងតែឯកសារ PDF តែមួយក៏បាន ប្រព័ន្ធនឹងបំប្លែងទៅជា PowerPoint និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរជូនដោយស្វ័យប្រវត្ត។",
+    pdf_only_hint: "សូមផ្ទុកឡើងឯកសារ PowerPoint (.pptx) ដើម្បីពិនិត្យ និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរជូនដោយស្វ័យប្រវត្ត។",
     
     // Preview / Review
     stats_slides: "ចំនួនស្លាយសរុប",

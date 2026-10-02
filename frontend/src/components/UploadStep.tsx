@@ -34,11 +34,11 @@ export const UploadStep: React.FC<UploadStepProps> = ({
 }) => {
   const t = translations[language];
 
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pptxFile, setPptxFile] = useState<File | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [dragOverPdf, setDragOverPdf] = useState(false);
+  const [dragOverPptx, setDragOverPptx] = useState(false);
 
-  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const pptxInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + ' B';
@@ -46,21 +46,21 @@ export const UploadStep: React.FC<UploadStepProps> = ({
     else return (bytes / 1048576).toFixed(1) + ' MB';
   };
 
-  const handlePdfDrop = (e: React.DragEvent) => {
+  const handlePptxDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    setDragOverPdf(false);
+    setDragOverPptx(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      if (file.name.toLowerCase().endsWith('.pdf')) {
-        setPdfFile(file);
+      if (file.name.toLowerCase().endsWith('.pptx')) {
+        setPptxFile(file);
       }
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pdfFile) return;
-    onSubmit(null, pdfFile);
+    if (!pptxFile) return;
+    onSubmit(pptxFile, null);
   };
 
   return (
@@ -72,75 +72,75 @@ export const UploadStep: React.FC<UploadStepProps> = ({
         </h1>
         <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-600 leading-relaxed font-khmer">
           {language === 'km'
-            ? 'ផ្ទុកឡើងឯកសារ PDF ដើម្បីបំប្លែងទៅជា PowerPoint (PPTX) ដែលអាចកែប្រែបាន និងជួសជុលអក្ខរាវិរុទ្ធអក្សរខ្មែរយូនីកូដត្រឹមត្រូវ ១០០% ផ្អែកលើវចនានុក្រម ជួន ណាត។'
-            : 'Upload a PDF presentation to automatically convert it into editable PowerPoint slides with 100% verified Khmer Unicode spelling restoration.'}
+            ? 'ផ្ទុកឡើងឯកសារ PowerPoint (.pptx) ដើម្បីពិនិត្យ និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរខូច ឬពុម្ពអក្សរចាស់ ឱ្យត្រឹមត្រូវ ១០០% ផ្អែកលើវចនានុក្រមភាសាខ្មែរ សម្ដេចសង្ឃរាជ ជួន ណាត។'
+            : 'Upload your PowerPoint presentation (.pptx) to check and correct Khmer spelling and corrupted characters based on the official Chuon Nath dictionary.'}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Single PDF Upload Zone */}
+        {/* Single PPTX Upload Zone */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-bold text-slate-800 flex items-center space-x-2">
               <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block" />
-              <span>{t.upload_pdf_title}</span>
+              <span>{t.upload_pptx_title}</span>
               <span className="text-rose-500 font-bold">*</span>
             </label>
-            <span className="text-xs text-slate-400 font-mono">.pdf</span>
+            <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md font-mono font-semibold">.pptx</span>
           </div>
 
           <div
             onDragOver={(e) => {
               e.preventDefault();
-              setDragOverPdf(true);
+              setDragOverPptx(true);
             }}
-            onDragLeave={() => setDragOverPdf(false)}
-            onDrop={handlePdfDrop}
-            onClick={() => pdfInputRef.current?.click()}
+            onDragLeave={() => setDragOverPptx(false)}
+            onDrop={handlePptxDrop}
+            onClick={() => pptxInputRef.current?.click()}
             className={`relative border-2 border-dashed rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200 flex flex-col justify-center items-center ${
-              dragOverPdf
+              dragOverPptx
                 ? 'border-indigo-500 bg-indigo-50/70 scale-[1.01]'
-                : pdfFile
+                : pptxFile
                 ? 'border-indigo-400 bg-indigo-50/30'
                 : 'border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50/80 shadow-xs'
             }`}
           >
             <input
-              ref={pdfInputRef}
+              ref={pptxInputRef}
               type="file"
-              accept=".pdf"
+              accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation"
               className="hidden"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  setPdfFile(e.target.files[0]);
+                  setPptxFile(e.target.files[0]);
                 }
               }}
             />
 
-            {pdfFile ? (
+            {pptxFile ? (
               <div className="space-y-4 w-full max-w-md mx-auto">
                 <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100">
                   <FileText className="w-8 h-8" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-slate-900 truncate">
-                    {pdfFile.name}
+                    {pptxFile.name}
                   </p>
                   <p className="text-xs text-indigo-700 font-semibold mt-1">
-                    {formatFileSize(pdfFile.size)}
+                    {formatFileSize(pptxFile.size)}
                   </p>
                 </div>
                 <div className="flex items-center justify-center space-x-3 pt-1">
                   <span className="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                     <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                    {language === 'km' ? 'រួចរាល់សម្រាប់ការបំប្លែង' : 'Ready to Convert'}
+                    {language === 'km' ? 'រួចរាល់សម្រាប់ពិនិត្យអក្ខរាវិរុទ្ធ' : 'Ready to Check Spelling'}
                   </span>
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setPdfFile(null);
-                      if (pdfInputRef.current) pdfInputRef.current.value = '';
+                      setPptxFile(null);
+                      if (pptxInputRef.current) pptxInputRef.current.value = '';
                     }}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                     title="Remove file"
@@ -162,13 +162,13 @@ export const UploadStep: React.FC<UploadStepProps> = ({
                     {t.drag_drop_hint}
                   </p>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1 font-khmer leading-relaxed">
-                    {t.upload_pdf_desc}
+                    {t.upload_pptx_desc}
                   </p>
                 </div>
                 <div>
                   <span className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-md shadow-indigo-100 hover:bg-indigo-700 transition">
                     <FileText className="w-4 h-4" />
-                    <span>Browse .pdf Document</span>
+                    <span>Browse .pptx File</span>
                   </span>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={!pdfFile || isLoading}
+            disabled={!pptxFile || isLoading}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-3.5 rounded-xl text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg shadow-indigo-200 transition active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (

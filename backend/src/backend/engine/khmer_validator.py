@@ -22,6 +22,11 @@ DICTIONARY_PATH = os.path.join(DATA_DIR, "khmer_words.txt")
 LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     # Latin 'f' as Khmer 'រ' (only when adjacent to Khmer characters)
     (re.compile(r'(?<=[\u1780-\u17FF])f|f(?=[\u1780-\u17FF])'), 'រ'),
+    (re.compile(r'នៃែក\s*បស្ន្\s*ថ្មី'), 'ផ្នែកបន្ថែមថ្មី'),
+    (re.compile(r'នៃែក\s*បស្ន្'), 'ផ្នែកបន្ថែម'),
+    (re.compile(r'នៃែក(?=[ក-អ]|\s)'), 'ផ្នែក'),
+    (re.compile(r'បស្ន្(?=[ក-អ]|\s|$)'), 'បន្ថែម'),
+    (re.compile(r'គ្នាឹុះ'), 'គន្លឹះ'),
     # Common legacy vowel and coeng shifts
     (re.compile(r'ស្កស្ក្ប'), 'កែប្រែ'),
     (re.compile(r'ស្ក[រវ]*ក្[មម្]ួល'), 'កែសម្រួល'),

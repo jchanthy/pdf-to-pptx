@@ -11,6 +11,15 @@ from typing import Dict, List, Tuple
 # Direct dictionary of frequent legacy/corrupted tokens to clean Unicode
 KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     # Specifically requested corrections:
+    "គ្នាឹុះ:": "គន្លឹះ:",
+    "គ្នាឹុះ": "គន្លឹះ",
+    "នៃែកបស្ន្ថ្មី": "ផ្នែកបន្ថែមថ្មី",
+    "នៃែកបស្ន្": "ផ្នែកបន្ថែម",
+    "នៃែក": "ផ្នែក",
+    "បស្ន្ថ្មី": "បន្ថែមថ្មី",
+    "បស្ន្": "បន្ថែម",
+    "បស្នែម": "បន្ថែម",
+    "បន្ថែមី": "បន្ថែមថ្មី",
     "វគ្គបណ្តុះបណ្ត្ល": "វគ្គបណ្ដុះបណ្ដាល",
     "វគ្គបណ្ដុះបណ្ដ្ល": "វគ្គបណ្ដុះបណ្ដាល",
     "វគ្គបណ្ត ុះបណ្ត្ ល": "វគ្គបណ្ដុះបណ្ដាល",
@@ -1167,10 +1176,38 @@ def replace_dictionary_terms(text: str, custom_dict: Dict[str, str] = None) -> T
     return current, replacements
 
 
+def extract_word_level_differences(orig: str, fixed: str) -> List[Tuple[str, str]]:
+    """
+    Compares original text with corrected text using Khmer word segmentation
+    and extracts distinct word/token replacements.
+    """
+    if orig == fixed or not orig.strip() or not fixed.strip():
+        return []
+    import difflib
+    try:
+        from .khmer_validator import khmer_validator
+        t_orig = khmer_validator.segment_text(orig)
+        t_fixed = khmer_validator.segment_text(fixed)
+    except Exception:
+        t_orig = re.findall(r'[\u1780-\u17FF]+|[^\u1780-\u17FF\s]+|\s+', orig)
+        t_fixed = re.findall(r'[\u1780-\u17FF]+|[^\u1780-\u17FF\s]+|\s+', fixed)
+
+    s = difflib.SequenceMatcher(None, t_orig, t_fixed)
+    replacements = []
+    for tag, i1, i2, j1, j2 in s.get_opcodes():
+        if tag in ('replace', 'delete', 'insert'):
+            o_sub = ''.join(t_orig[i1:i2]).strip()
+            f_sub = ''.join(t_fixed[j1:j2]).strip()
+            if o_sub and f_sub and o_sub != f_sub:
+                replacements.append((o_sub, f_sub))
+    return replacements
+
+
 def restore_khmer_text(text: str, custom_dict: Dict[str, str] = None) -> Tuple[str, List[Tuple[str, str]]]:
     """
     Unified high-level restoration function:
     NFC normalization -> Dictionary replacement -> Algorithmic decoding & Auto-repair -> Heuristic rules -> Coeng sanitization.
+    Returns (corrected_text, list_of_word_replacements).
     """
     if not text:
         return "", []
@@ -1188,4 +1225,17 @@ def restore_khmer_text(text: str, custom_dict: Dict[str, str] = None) -> Tuple[s
         
     fixed, _ = repair_khmer_heuristics(fixed)
     fixed = sanitize_khmer_coeng(fixed)
-    return fixed, matches
+
+    # Extract word-level differences between original text and final fixed text
+    diffs = extract_word_level_differences(text, fixed)
+    
+    # Combine matches with word-level diffs without duplicates
+    combined = list(matches)
+    seen_origs = {m[0] for m in combined}
+    for o_w, r_w in diffs:
+        if o_w not in seen_origs and o_w != r_w:
+            combined.append((o_w, r_w))
+            seen_origs.add(o_w)
+
+    return fixed, combined
+
