@@ -21,7 +21,7 @@ interface UploadStepProps {
   onOptionsChange: (newOptions: ProcessOptions) => void;
   onSubmit: (pptx: File | null, pdf: File | null) => void;
   isLoading: boolean;
-  onLoadSample: () => void;
+  onLoadSample?: () => void;
 }
 
 export const UploadStep: React.FC<UploadStepProps> = ({
@@ -31,7 +31,6 @@ export const UploadStep: React.FC<UploadStepProps> = ({
   onOptionsChange,
   onSubmit,
   isLoading,
-  onLoadSample,
 }) => {
   const t = translations[language];
 
@@ -68,10 +67,6 @@ export const UploadStep: React.FC<UploadStepProps> = ({
     <div className="max-w-3xl mx-auto space-y-8 pb-12">
       {/* Hero Welcome */}
       <div className="text-center space-y-3 pt-2">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          <span>Khmer PDF to PPTX & Unicode Restorer</span>
-        </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
           {t.app_title}: <span className="text-indigo-600">{t.app_subtitle}</span>
         </h1>
@@ -274,18 +269,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-          {/* 1-Click Demo Button */}
-          <button
-            type="button"
-            onClick={onLoadSample}
-            disabled={isLoading}
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-3 rounded-xl text-sm font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 transition cursor-pointer disabled:opacity-50"
-          >
-            <Sparkles className="w-4 h-4 text-amber-600 animate-bounce" />
-            <span className="font-khmer">{t.btn_load_sample}</span>
-          </button>
-
+        <div className="flex justify-center sm:justify-end pt-2">
           {/* Submit Button */}
           <button
             type="submit"

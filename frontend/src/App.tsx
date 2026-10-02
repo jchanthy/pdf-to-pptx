@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Navbar } from './components/Navbar';
-import { StepWizard } from './components/StepWizard';
 import { UploadStep } from './components/UploadStep';
 import { PreviewStep } from './components/PreviewStep';
 import { DownloadStep } from './components/DownloadStep';
@@ -14,7 +13,6 @@ import type {
 import {
   getFonts,
   uploadAndProcess,
-  loadSamplePresentation,
   applyFixesAndDownload,
 } from './services/api';
 import { translations } from './i18n/translations';
@@ -62,22 +60,6 @@ export function App() {
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || t.alert_error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLoadSample = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
-    try {
-      const response = await loadSamplePresentation();
-      setProcessResult(response);
-      setSavedReplacements(response.all_replacements);
-      setCurrentStep(2);
-    } catch (err: any) {
-      console.error(err);
-      setErrorMessage(err.message || 'Failed to load sample presentation');
     } finally {
       setIsLoading(false);
     }
@@ -146,29 +128,11 @@ export function App() {
       <Navbar
         language={language}
         onLanguageToggle={handleLanguageToggle}
-        onLoadSample={handleLoadSample}
         isLoading={isLoading}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Step Wizard Bar */}
-        <StepWizard
-          currentStep={currentStep}
-          language={language}
-          onStepClick={(step) => {
-            if (step === 1) setCurrentStep(1);
-            if (step === 2 && processResult) setCurrentStep(2);
-            if (step === 3 && processResult) setCurrentStep(3);
-          }}
-          canNavigateToStep={(step) => {
-            if (step === 1) return true;
-            if (step === 2) return Boolean(processResult);
-            if (step === 3) return Boolean(processResult);
-            return false;
-          }}
-        />
-
         {/* Error Notification */}
         {errorMessage && (
           <div className="max-w-4xl mx-auto mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start justify-between shadow-xs">
@@ -197,7 +161,6 @@ export function App() {
             onOptionsChange={setOptions}
             onSubmit={handleUploadSubmit}
             isLoading={isLoading}
-            onLoadSample={handleLoadSample}
           />
         )}
 

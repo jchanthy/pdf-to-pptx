@@ -1,19 +1,16 @@
-import { FileText, Globe, Sparkles } from 'lucide-react';
+import { FileText, Globe } from 'lucide-react';
 import type { Language } from '../types';
 import { translations } from '../i18n/translations';
 
 interface NavbarProps {
   language: Language;
   onLanguageToggle: () => void;
-  onLoadSample: () => void;
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   language,
   onLanguageToggle,
-  onLoadSample,
-  isLoading,
 }) => {
   const t = translations[language];
 
@@ -42,17 +39,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Actions */}
         <div className="flex items-center space-x-3">
-          {/* Quick Demo Button */}
-          <button
-            onClick={onLoadSample}
-            disabled={isLoading}
-            className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200/80 hover:bg-amber-100/90 active:scale-98 transition shadow-xs disabled:opacity-50 cursor-pointer"
-            title="Load demo with corrupted text & Limon font"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-            <span>{t.btn_load_sample}</span>
-          </button>
-
           {/* Language Switcher */}
           <button
             onClick={onLanguageToggle}
