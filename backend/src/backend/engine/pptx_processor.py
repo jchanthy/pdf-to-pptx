@@ -215,6 +215,9 @@ def apply_replacements_and_fonts(
         repl = r.get("replacement", "").strip()
         
         if s_idx is not None and orig and repl and orig != repl:
+            # Prevent single Khmer character replacements across entire slides
+            if len(orig) < 2 and any(0x1780 <= ord(c) <= 0x17FF for c in orig):
+                continue
             if s_idx not in slide_substring_replacements:
                 slide_substring_replacements[s_idx] = []
             slide_substring_replacements[s_idx].append((orig, repl))
