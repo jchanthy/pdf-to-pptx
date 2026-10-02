@@ -22,6 +22,71 @@ from ..models import ProcessResponse, ReplacementItem, SlideDiff
 logger = logging.getLogger(__name__)
 
 
+def _extract_logical_paragraphs(block: dict) -> List[Tuple[str, float, int, int]]:
+    """
+    Groups visual lines in a text block into logical paragraphs to prevent
+    Khmer words and sub-syllable clusters from being broken across soft line breaks.
+    Returns a list of tuples: (raw_paragraph_text, font_size, color_int, flags)
+    """
+    import re
+    bullet_pattern = re.compile(r'^\s*(?:[0-9]+[.)]|[១-៩]+[.)]|[-*❖•–—]|[ក-អ][.)])\s*')
+    
+    logical_paras = []
+    current_lines = []
+    primary_span = None
+    
+    for line in block.get("lines", []):
+        spans = line.get("spans", [])
+        if not spans:
+            continue
+        line_text = "".join(s.get("text", "") for s in spans).strip()
+        if not line_text:
+            if current_lines:
+                logical_paras.append((current_lines, primary_span))
+                current_lines = []
+                primary_span = None
+            continue
+            
+        if not primary_span:
+            primary_span = spans[0]
+            
+        # If this line starts with a new bullet or list number, it's a new paragraph
+        if bullet_pattern.match(line_text) and current_lines:
+            logical_paras.append((current_lines, primary_span))
+            current_lines = [line_text]
+            primary_span = spans[0]
+        else:
+            current_lines.append(line_text)
+            
+    if current_lines:
+        logical_paras.append((current_lines, primary_span))
+        
+    result = []
+    for lines, p_span in logical_paras:
+        joined_text = ""
+        for l in lines:
+            if not joined_text:
+                joined_text = l
+            else:
+                last_c = joined_text[-1]
+                first_c = l[0]
+                if last_c == '\u17d2' or first_c == '\u17d2':
+                    joined_text += l
+                elif (0x1780 <= ord(last_c) <= 0x17FF) and (0x1780 <= ord(first_c) <= 0x17FF):
+                    joined_text += l
+                elif (last_c.isalnum() and ord(last_c) < 128) and (first_c.isalnum() and ord(first_c) < 128):
+                    joined_text += " " + l
+                else:
+                    joined_text += " " + l
+                    
+        f_size = p_span.get("size", 14.0) if p_span else 14.0
+        c_int = p_span.get("color", 0x0) if p_span else 0x0
+        flags = p_span.get("flags", 0) if p_span else 0
+        result.append((joined_text, f_size, c_int, flags))
+        
+    return result
+
+
 def convert_pdf_to_pptx(
     pdf_path: str,
     output_pptx_path: str,
@@ -90,8 +155,8 @@ def convert_pdf_to_pptx(
                 continue
                 
             bx0, by0, bx1, by1 = block["bbox"]
-            bw = max(bx1 - bx0 + 15, 20)
-            bh = max(by1 - by0 + 8, 15)
+            bw = max(bx1 - bx0 + 20, 30)
+            bh = max(by1 - by0 + 10, 20)
             
             # Create text box at block coordinates
             tx_box = slide.shapes.add_textbox(Pt(bx0), Pt(by0), Pt(bw), Pt(bh))
@@ -99,67 +164,53 @@ def convert_pdf_to_pptx(
             tf.word_wrap = True
             tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
             
-            block_lines = block.get("lines", [])
-            for l_idx, line in enumerate(block_lines):
-                # Aggregate line text across spans
-                spans = line.get("spans", [])
-                if not spans:
-                    continue
-                    
-                line_raw_text = "".join(s.get("text", "") for s in spans)
-                if not line_raw_text.strip():
+            logical_paras = _extract_logical_paragraphs(block)
+            for p_idx, (para_raw_text, font_size, color_int, flags) in enumerate(logical_paras):
+                if not para_raw_text.strip():
                     continue
                     
                 # Restore Khmer text using Chuon Nath dictionary & decoder
-                line_fixed_text, _ = restore_khmer_text(line_raw_text)
-                line_fixed_text = sanitize_khmer_coeng(line_fixed_text)
+                para_fixed_text, _ = restore_khmer_text(para_raw_text)
+                para_fixed_text = sanitize_khmer_coeng(para_fixed_text)
                 
-                full_slide_original.append(line_raw_text)
-                full_slide_corrected.append(line_fixed_text)
+                full_slide_original.append(para_raw_text)
+                full_slide_corrected.append(para_fixed_text)
                 
                 # Check for slide title (first prominent line near top)
-                if not slide_title and by0 < page_height * 0.25 and len(line_fixed_text) > 3:
-                    slide_title = line_fixed_text
+                if not slide_title and by0 < page_height * 0.25 and len(para_fixed_text) > 3:
+                    slide_title = para_fixed_text
                     
                 # Record replacement if text was corrected
-                if line_raw_text.strip() != line_fixed_text.strip():
+                if para_raw_text.strip() != para_fixed_text.strip():
                     rep_id = str(uuid.uuid4())[:8]
                     rep_item = ReplacementItem(
                         id=rep_id,
                         slide_index=page_idx,
-                        shape_id=f"pdf_shape_{b_idx}_{l_idx}",
-                        paragraph_index=l_idx,
+                        shape_id=f"pdf_shape_{b_idx}_{p_idx}",
+                        paragraph_index=p_idx,
                         run_index=0,
-                        original=line_raw_text.strip(),
-                        replacement=line_fixed_text.strip(),
+                        original=para_raw_text.strip(),
+                        replacement=para_fixed_text.strip(),
                         confidence=0.96,
                         source="pdf_direct_restoration",
                         status="accepted",
                         explanation="Restored Khmer Unicode spelling from PDF text stream",
-                        context=line_raw_text.strip()
+                        context=para_raw_text.strip()
                     )
                     slide_replacements.append(rep_item)
                     all_replacements.append(rep_item)
                     
                 # Add paragraph to text frame
-                p = tf.paragraphs[0] if (l_idx == 0) else tf.add_paragraph()
-                
-                # Use primary span font size and color
-                primary_span = spans[0]
+                p = tf.paragraphs[0] if (p_idx == 0) else tf.add_paragraph()
                 run = p.add_run()
-                run.text = line_fixed_text
-                
-                font_size = primary_span.get("size", 14.0)
+                run.text = para_fixed_text
                 run.font.size = Pt(font_size)
                 
-                color_int = primary_span.get("color", 0x0)
                 r = (color_int >> 16) & 0xFF
                 g = (color_int >> 8) & 0xFF
                 b = color_int & 0xFF
                 run.font.color.rgb = RGBColor(r, g, b)
                 
-                # Check bold / italic flags
-                flags = primary_span.get("flags", 0)
                 if flags & 2:  # italic
                     run.font.italic = True
                 if flags & 16:  # bold
