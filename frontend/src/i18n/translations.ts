@@ -33,8 +33,10 @@ export const translations = {
     gemini_key_desc: "Used for deep contextual semantic restoration of heavily broken Khmer glyphs",
     
     btn_start_processing: "Start Unicode Restoration",
+    btn_convert_pdf: "Convert PDF to PPTX & Fix Spelling",
     btn_processing: "Analyzing Slides & Aligning...",
     btn_load_sample: "Load Demo Sample (1-Click Test)",
+    pdf_only_hint: "You can upload ONLY a PDF to generate editable PowerPoint slides with Chuon Nath spellcheck.",
     
     // Preview / Review
     stats_slides: "Slides Analyzed",
@@ -132,8 +134,10 @@ export const translations = {
     gemini_key_desc: "ប្រើសម្រាប់វិភាគពាក្យបច្ចេកទេស និងកែពាក្យខូចខ្លាំងដែលគ្មានក្នុងវចនានុក្រម",
     
     btn_start_processing: "ចាប់ផ្ដើមជួសជុលអក្សរយូនីកូដ",
+    btn_convert_pdf: "បំប្លែង PDF ទៅជា PPTX និងកែអក្ខរាវិរុទ្ធ",
     btn_processing: "កំពុងវិភាគស្លាយ និង ផ្គូផ្គងពាក្យ...",
     btn_load_sample: "សាកល្បងឯកសារគំរូ (១ ចុច)",
+    pdf_only_hint: "លោកអ្នកអាចផ្ទុកឡើងតែឯកសារ PDF តែមួយក៏បាន ប្រព័ន្ធនឹងបំប្លែងទៅជា PowerPoint និងកែអក្ខរាវិរុទ្ធអក្សរខ្មែរជូនដោយស្វ័យប្រវត្ត។",
     
     // Preview / Review
     stats_slides: "ចំនួនស្លាយសរុប",

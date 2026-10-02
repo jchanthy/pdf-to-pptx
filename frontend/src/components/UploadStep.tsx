@@ -20,7 +20,7 @@ interface UploadStepProps {
   fonts: FontOption[];
   options: ProcessOptions;
   onOptionsChange: (newOptions: ProcessOptions) => void;
-  onSubmit: (pptx: File, pdf: File | null) => void;
+  onSubmit: (pptx: File | null, pdf: File | null) => void;
   isLoading: boolean;
   onLoadSample: () => void;
 }
@@ -75,7 +75,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pptxFile) return;
+    if (!pptxFile && !pdfFile) return;
     onSubmit(pptxFile, pdfFile);
   };
 
@@ -85,7 +85,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
       <div className="text-center space-y-3 pt-2">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          <span>Limon & ABC Font Unicode Restorer</span>
+          <span>Khmer PDF to PPTX & Unicode Restorer</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
           {t.app_title}: <span className="text-indigo-600">{t.app_subtitle}</span>
@@ -93,6 +93,12 @@ export const UploadStep: React.FC<UploadStepProps> = ({
         <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-600 leading-relaxed font-khmer">
           {t.tagline}
         </p>
+
+        {/* Feature highlight badge */}
+        <div className="inline-flex items-center space-x-2 text-xs font-medium text-emerald-800 bg-emerald-50 px-4 py-1.5 rounded-full border border-emerald-200 shadow-xs">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span className="font-khmer">{t.pdf_only_hint}</span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -104,7 +110,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
               <label className="text-sm font-bold text-slate-800 flex items-center space-x-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block" />
                 <span>{t.target_pptx_title}</span>
-                <span className="text-rose-500 font-bold">*</span>
+                {!pdfFile && <span className="text-rose-500 font-bold">*</span>}
               </label>
               <span className="text-xs text-slate-400 font-mono">.pptx</span>
             </div>
@@ -198,7 +204,11 @@ export const UploadStep: React.FC<UploadStepProps> = ({
               <label className="text-sm font-bold text-slate-800 flex items-center space-x-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block" />
                 <span>{t.reference_pdf_title}</span>
-                <span className="text-xs text-slate-400 font-normal">({language === 'km' ? 'ជម្រើសបន្ថែម' : 'Optional'})</span>
+                <span className="text-xs text-indigo-600 font-medium">
+                  {!pptxFile && pdfFile
+                    ? (language === 'km' ? '(បំប្លែងទៅ PPTX)' : '(Direct to PPTX)')
+                    : (language === 'km' ? '(ផ្ទៀងផ្ទាត់ ឬ បំប្លែង)' : '(Reference or Convert)')}
+                </span>
               </label>
               <span className="text-xs text-slate-400 font-mono">.pdf</span>
             </div>
@@ -396,7 +406,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={!pptxFile || isLoading}
+            disabled={(!pptxFile && !pdfFile) || isLoading}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-3.5 rounded-xl text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg shadow-indigo-200 transition active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
@@ -406,6 +416,11 @@ export const UploadStep: React.FC<UploadStepProps> = ({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
                 <span className="font-khmer">{t.btn_processing}</span>
+              </>
+            ) : !pptxFile && pdfFile ? (
+              <>
+                <Sparkles className="w-5 h-5" />
+                <span className="font-khmer">{t.btn_convert_pdf}</span>
               </>
             ) : (
               <>

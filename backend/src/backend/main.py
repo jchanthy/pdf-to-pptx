@@ -24,6 +24,7 @@ from .models import (
 from .engine.dictionary import replace_dictionary_terms, repair_khmer_heuristics, clean_khmer_unicode, restore_khmer_text
 from .engine.legacy_converter import convert_limon_to_unicode, is_likely_legacy_font
 from .engine.pdf_extractor import extract_text_from_pdf
+from .engine.pdf_to_pptx import convert_pdf_to_pptx
 from .engine.text_aligner import align_slide_with_pdf
 from .engine.gemini_restorer import restore_with_gemini
 from .engine.pptx_processor import (
@@ -290,23 +291,76 @@ def _process_presentation_internal(
 
 @app.post("/api/upload", response_model=ProcessResponse)
 async def upload_and_process(
-    pptx_file: UploadFile = File(...),
+    pptx_file: Optional[UploadFile] = File(None),
     pdf_file: Optional[UploadFile] = File(None),
     target_font: str = Form("Khmer OS Battambang"),
     mode: str = Form("auto"),
     gemini_api_key: Optional[str] = Form(None)
 ):
     """
-    Uploads corrupted PPTX and optional reference PDF,
-    parses slides, runs detection & alignment algorithms,
-    and returns review items.
+    Accepts either:
+    1. A single PDF file -> Converts PDF to PPTX with full Khmer Unicode spellcheck & restoration.
+    2. A PPTX presentation (+ optional reference PDF) -> Restores corrupted text using dictionary & alignment.
     """
-    if not pptx_file.filename.lower().endswith(".pptx"):
-        raise HTTPException(status_code=400, detail="Only .pptx files are supported for presentation upload.")
+    has_pptx = pptx_file is not None and bool(pptx_file.filename)
+    has_pdf = pdf_file is not None and bool(pdf_file.filename)
+
+    if not has_pptx and not has_pdf:
+        raise HTTPException(status_code=400, detail="Please upload either a PDF document or a PowerPoint (.pptx) file.")
 
     session_id = str(uuid.uuid4())
     session_dir = os.path.join(BASE_TEMP_DIR, session_id)
     os.makedirs(session_dir, exist_ok=True)
+
+    # Mode 1: PDF Only Upload (Direct PDF-to-PPTX with Chuon Nath spellcheck)
+    if has_pdf and not has_pptx:
+        if not pdf_file.filename.lower().endswith(".pdf"):
+            raise HTTPException(status_code=400, detail="Only .pdf files are supported for PDF conversion.")
+            
+        pdf_save_path = os.path.join(session_dir, "reference.pdf")
+        with open(pdf_save_path, "wb") as f:
+            pdf_content = await pdf_file.read()
+            f.write(pdf_content)
+
+        converted_pptx_path = os.path.join(session_dir, "converted.pptx")
+        base_name = os.path.splitext(pdf_file.filename)[0]
+        original_filename = f"{base_name}.pptx"
+
+        try:
+            _, slides_diff, all_replacements = convert_pdf_to_pptx(
+                pdf_path=pdf_save_path,
+                output_pptx_path=converted_pptx_path,
+                temp_dir=session_dir,
+                target_font=target_font
+            )
+
+            session_registry[session_id] = {
+                "pptx_path": converted_pptx_path,
+                "pdf_path": pdf_save_path,
+                "original_filename": original_filename,
+                "target_font": target_font,
+                "mode": "pdf_direct",
+                "gemini_api_key": gemini_api_key,
+                "is_pdf_direct": True
+            }
+
+            return ProcessResponse(
+                session_id=session_id,
+                total_slides=len(slides_diff),
+                total_corrupted_found=len(all_replacements),
+                slides=slides_diff,
+                all_replacements=all_replacements,
+                target_font=target_font,
+                has_pdf_reference=True,
+                mode="pdf_direct"
+            )
+        except Exception as e:
+            logger.exception("Error converting PDF to PPTX")
+            raise HTTPException(status_code=500, detail=f"Failed to convert PDF to PPTX: {str(e)}")
+
+    # Mode 2: PPTX file provided (with optional reference PDF)
+    if not pptx_file.filename.lower().endswith(".pptx"):
+        raise HTTPException(status_code=400, detail="Only .pptx files are supported for presentation upload.")
 
     pptx_save_path = os.path.join(session_dir, "input.pptx")
     with open(pptx_save_path, "wb") as f:
@@ -314,20 +368,20 @@ async def upload_and_process(
         f.write(content)
 
     pdf_save_path = None
-    if pdf_file and pdf_file.filename:
+    if has_pdf:
         pdf_save_path = os.path.join(session_dir, "reference.pdf")
         with open(pdf_save_path, "wb") as f:
             pdf_content = await pdf_file.read()
             f.write(pdf_content)
 
-    # Store in session registry
     session_registry[session_id] = {
         "pptx_path": pptx_save_path,
         "pdf_path": pdf_save_path,
         "original_filename": pptx_file.filename,
         "target_font": target_font,
         "mode": mode,
-        "gemini_api_key": gemini_api_key
+        "gemini_api_key": gemini_api_key,
+        "is_pdf_direct": False
     }
 
     try:

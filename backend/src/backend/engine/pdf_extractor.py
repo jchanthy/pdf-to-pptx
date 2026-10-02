@@ -61,13 +61,38 @@ def _process_extracted_lines(raw_text: str) -> Tuple[str, List[str]]:
 def extract_text_from_pdf(pdf_path: str) -> List[PDFPageContent]:
     """
     Extracts text from each page of a PDF file.
-    Uses pypdf first because it preserves logical sequential character streams in Khmer
-    without detaching vowels/diacritics into vertical coordinate slices.
-    Falls back to pdfplumber (layout=False) if needed.
+    Uses pymupdf (fitz) text blocks first because it respects 2D spatial text frames
+    and preserves multi-line tables, cards, and diagrams without horizontal concatenation.
+    Falls back to pypdf and pdfplumber if needed.
     """
     pages_content: List[PDFPageContent] = []
     
-    # 1. Try pypdf first
+    # 1. Try PyMuPDF block extraction (highest spatial accuracy for slides)
+    try:
+        import pymupdf
+        doc = pymupdf.open(pdf_path)
+        for idx, page in enumerate(doc):
+            page_num = idx + 1
+            blocks = page.get_text("blocks")
+            raw_blocks = []
+            for b in blocks:
+                b_text = b[4].strip()
+                # Skip isolated page numbers
+                if b_text and b_text != str(page_num):
+                    raw_blocks.append(b_text)
+            raw_text = "\n".join(raw_blocks)
+            full_text, lines = _process_extracted_lines(raw_text)
+            pages_content.append(PDFPageContent(
+                page_number=page_num,
+                text=full_text,
+                lines=lines
+            ))
+        if any(p.lines for p in pages_content):
+            return pages_content
+    except Exception as e:
+        logger.warning(f"pymupdf extraction failed, falling back to pypdf: {e}")
+
+    # 2. Fallback to pypdf
     try:
         reader = pypdf.PdfReader(pdf_path)
         for idx, page in enumerate(reader.pages):
@@ -85,7 +110,7 @@ def extract_text_from_pdf(pdf_path: str) -> List[PDFPageContent]:
     except Exception as e:
         logger.warning(f"pypdf extraction failed, falling back to pdfplumber: {e}")
 
-    # 2. Fallback to pdfplumber without layout=True to avoid vertical splitting of diacritics
+    # 3. Fallback to pdfplumber without layout=True to avoid vertical splitting of diacritics
     try:
         pages_content = []
         with pdfplumber.open(pdf_path) as pdf:

@@ -26,7 +26,86 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'ស្កស្ក្ប'), 'កែប្រែ'),
     (re.compile(r'ស្ក[រវ]*ក្[មម្]ួល'), 'កែសម្រួល'),
     (re.compile(r'ស្កស្ក'), 'កែ'),
-    (re.compile(r'ស្ក'), 'កែ'),
+    (re.compile(r'(?:^|(?<=\s))ស្ក(?=\s|$)'), 'កែ'),
+    # វិធីសាស្ត្រ
+    (re.compile(r'វិធីសាស្រ[ស្]+'), 'វិធីសាស្ត្រ'),
+    # Siemreap font shifts (Lesson 05 & related presentations)
+    (re.compile(r'សូ[េម]\s*អ្\s*គ[ពុ]+ណ'), 'សូមអរគុណ'),
+    (re.compile(r'អ្នក្\s*មរបើ|អ្នកមរបើ'), 'អ្នកប្រើ'),
+    (re.compile(r'(?:^|(?<=\s))កា\s+(?=[ក-អ])'), 'ការ'),
+    (re.compile(r'ទូ\s*សពទ'), 'ទូរស័ព្ទ'),
+    (re.compile(r'[្លល]+ទែជាតិ'), 'ផ្លូវជាតិ'),
+    (re.compile(r'សពខភាព'), 'សុខភាព'),
+    (re.compile(r'សពខមាលភាព'), 'សុខុមាលភាព'),
+    (re.compile(r'ព\s*ត៌មានែិទសា|ព័ត៌មានែិទសា'), 'ព័ត៌មានវិទ្យា'),
+    (re.compile(r'ព\s*ត៌មាន'), 'ព័ត៌មាន'),
+    (re.compile(r'ែិទសា'), 'វិទ្យា'),
+    (re.compile(r'ក្ពំពសូ[ទ័រ]*'), 'កុំព្យូទ័រ'),
+    (re.compile(r'ថាេពល'), 'ថាមពល'),
+    (re.compile(r'ឧបក្\s*ណ៍'), 'ឧបករណ៍'),
+    (re.compile(r'មរបើរបាស់'), 'ប្រើប្រាស់'),
+    (re.compile(r'មរបើ'), 'ប្រើ'),
+    (re.compile(r'បបតង'), 'បៃតង'),
+    (re.compile(r'វក្បចន'), 'កែច្នៃ'),
+    (re.compile(r'ម\s*ើងែិញ'), 'ឡើងវិញ'),
+    (re.compile(r'កា\s*កា\s*ពា|កាកាពា'), 'ការការពារ'),
+    (re.compile(r'កា\s+កា\s+ពា'), 'ការការពារ'),
+    (re.compile(r'ទិនន(?=\s|និង|$|,)'), 'ទិន្នន័យ'),
+    (re.compile(r'បអ្ប្កង់'), 'អេក្រង់'),
+    (re.compile(r'បចេតបបននភាព'), 'បច្ចុប្បន្នភាព'),
+    (re.compile(r'សូេអ្\s*គពណ'), 'សូមអរគុណ'),
+    (re.compile(r'ោស\s*ោឋសន'), 'អាសយដ្ឋាន'),
+    (re.compile(r'្លទែជាតិ'), 'ផ្លូវជាតិ'),
+    (re.compile(r'សងាកសត់'), 'សង្កាត់'),
+    (re.compile(r'វរពក្មលៀប'), 'ព្រែកលៀប'),
+    (re.compile(r'ខណឌ'), 'ខណ្ឌ'),
+    (re.compile(r'ោជធានី'), 'រាជធានី'),
+    (re.compile(r'ភនំមពញ'), 'ភ្នំពេញ'),
+    (re.compile(r'មលខទូ\s*សពទ'), 'លេខទូរស័ព្ទ'),
+    (re.compile(r'ជបប្?េីស'), 'ជម្រើស'),
+    (re.compile(r'បប្េុង'), 'បម្រុង'),
+    (re.compile(r'ព្ព្កស'), 'ពពក'),
+    (re.compile(r'បជៀសវាង'), 'ជៀសវាង'),
+    (re.compile(r'ហានិ្័យ'), 'ហានិភ័យ'),
+    (re.compile(r'បាត្់បង់'), 'បាត់បង់'),
+    (re.compile(r'អ្គ្គី្័យ'), 'អគ្គិភ័យ'),
+    (re.compile(r'បចរកេម'), 'ចោរកម្ម'),
+    (re.compile(r'េហន្ោយ'), 'មហន្តរាយ'),
+    (re.compile(r'បដីេបី'), 'ដើម្បី'),
+    (re.compile(r'វកលេារ'), 'កែលម្អ'),
+    (re.compile(r'កប្េិត'), 'កម្រិត'),
+    (re.compile(r'បេីល'), 'មើល'),
+    (re.compile(r'ព្ប្ងីក'), 'ពង្រីក'),
+    (re.compile(r'ប្ត្ឹេវត្'), 'ត្រឹមតែ'),
+    (re.compile(r'ប៉ាតបណ្តោុះ'), 'ប៉ុណ្ណោះ'),
+    (re.compile(r'បទប៉ាតវន្វា'), 'ទេប៉ុន្តែវា'),
+    (re.compile(r'វសនក'), 'ផ្នែក'),
+    (re.compile(r'សន្ិសតខ'), 'សន្តិសុខ'),
+    (re.compile(r'សាគល់'), 'ស្គាល់'),
+    (re.compile(r'សបេលង'), 'សំឡេង'),
+    (re.compile(r'ចំបពាុះ'), 'ចំពោះ'),
+    (re.compile(r'ដំបណីរការ'), 'ដំណើរការ'),
+    (re.compile(r'ទាន់សេ័យ'), 'ទាន់សម័យ'),
+    (re.compile(r'ខកខានេិនបាន'), 'ខកខានមិនបាន'),
+    (re.compile(r'បធវី'), 'ធ្វើ'),
+    (re.compile(r'មៅក្នុង'), 'នៅក្នុង'),
+    (re.compile(r'មៅមពល'), 'នៅពេល'),
+    (re.compile(r'មរកាេ'), 'ក្រោម'),
+    (re.compile(r'អ្នក្ោច'), 'អ្នកអាច'),
+    (re.compile(r'ចំវណក្'), 'ចំណែក'),
+    (re.compile(r'កាត់បនថ(?=\s|$)'), 'កាត់បន្ថយ'),
+    (re.compile(r'្លប\s*េះពាល់'), 'ផលប៉ះពាល់'),
+    (re.compile(r'ទំមនើប'), 'ទំនើប'),
+    (re.compile(r'រពួ\s*បា\s*េភ'), 'ព្រួយបារម្ភ'),
+    (re.compile(r'ខាលសំង'), 'ខ្លាំង'),
+    (re.compile(r'របជាជន'), 'ប្រជាជន'),
+    (re.compile(r'ទូមៅ'), 'ទូទៅ'),
+    (re.compile(r'សនសេំ'), 'សន្សំ'),
+    (re.compile(r'បសេងៗ'), 'ផ្សេងៗ'),
+    (re.compile(r'បសេង'), 'ផ្សេង'),
+    (re.compile(r'បលី(?=\s|អ|ប|ក)'), 'លើ'),
+    (re.compile(r'បនុះ(?=\s|$|,)'), 'នេះ'),
+    (re.compile(r'បន(?=\s+ការ|\s+ម)'), 'នៃ'),
     (re.compile(r'ក្ប[ាវ]+[់ស់]'), 'ប្រាស់'),
     (re.compile(r'អក្បី'), 'ប្រើ'),
     (re.compile(r'ក្បA័នធ'), 'ប្រព័ន្ធ'),
@@ -268,6 +347,70 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'ថាវរឹង'), 'ថាសរឹង'),
     (re.compile(r'ក[តំ]+[Aព]យូទ័រ'), 'កុំព្យូទ័រ'),
     (re.compile(r'កតម[Aព]យូទ័រ'), 'កុំព្យូទ័រ'),
+    # Type E: Siemens / KhmerOS Siemreap OCR & Phonetic Repair Rules
+    (re.compile(r'វ\s*ធ\s*ិ\s*ស\s*ា\s*ី\s*ស\s*្\s*រ\s*ស\s*ក\s*ា\s*្\s*រ\s*ព\s*ា\s*រ|វិធីសាស្រស្ការពារ'), 'វិធីសាស្ត្រការពារ'),
+    (re.compile(r'ប\s*រ\s*ស\s*ា\s*ិ\s*ថ\s*ន\s*ស\s*ា\s*ា\s*ត\s*្?|បរិសាថនសាាត្'), 'បរិស្ថានស្អាត'),
+    (re.compile(r'មា៉ា\s*ល\s*់?\s*វ\s*វ\s*កា\s*រ\s*វា\s*យ\s*ប\s*្\s*ប\s*ហា\s*រ|មា៉ាល់វវការវាយប្បហារ'), 'ម៉ាល់វែរ ការវាយប្រហារ'),
+    (re.compile(r'អ្នកប+ប្រើ|អ្នកប+ប្បី'), 'អ្នកប្រើ'),
+    (re.compile(r'ស\s*ត\s*ខ\s*មា\s*ល\s*ភា\s*ព\s*្\s*អ\s*្\s*ក\s*ន\s*ប\s*ប\s*្\s*ប\s*ី|សតខមាលភាព្អ្កនបប្បី|សុខុមាលភាពអ្នកប+ប្រើ'), 'សុខុមាលភាពអ្នកប្រើ'),
+    (re.compile(r'ស\s*ត\s*ខ\s*មា\s*ល\s*ភា\s*ព\s*្'), 'សុខុមាលភាព'),
+    (re.compile(r'ស\s*ត\s*វ\s*ត្\s*ថ\s*ិ\s*ភា\s*ព\s*្'), 'សុវត្ថិភាព'),
+    (re.compile(r'ស\s*ត\s*ខ\s*ភា\s*ព\s*្'), 'សុខភាព'),
+    (re.compile(r'ស\s*ត\s*ខ'), 'សុខ'),
+    (re.compile(r'ស\s*ត\s*វ'), 'សុវ'),
+    (re.compile(r'ក\s*ត\s*ំ\s*ព\s*្\s*យ\s*ូ\s*ទ\s*័\s*រ|ក\s*ត\s*ំព្យូទ័រ|កតំព្យូទ័រ'), 'កុំព្យូទ័រ'),
+    (re.compile(r'ប\s*ប\s*្\s*ប\s*ី|ប\s*ប\s*្\s*បី'), 'ប្រើ'),
+    (re.compile(r'អ\s*្\s*ក\s*ន|អ្\s*ក\s*ន'), 'អ្នក'),
+    (re.compile(r'ប\s*្\s*ប\s*ហា\s*រ'), 'ប្រហារ'),
+    (re.compile(r'ព\s*្\s*័\s*ត្\s*៌\s*មា\s*ន|ព្័ត្៌មាន'), 'ព័ត៌មាន'),
+    (re.compile(r'ប\s*ប\s*្\s*ត\s*ង|បបត្ង'), 'បៃតង'),
+    (re.compile(r'វិទា\b'), 'វិទ្យា'),
+    (re.compile(r'ភាព្\b'), 'ភាព'),
+    (re.compile(r'ព្ាបាទ'), 'ព្យាបាទ'),
+    (re.compile(r'ព្ព្ួក'), 'ពួក'),
+    (re.compile(r'ប្ព្េ'), 'ព្រម'),
+    (re.compile(r'ព្ី'), 'ពី'),
+    (re.compile(r'បេបោគ្'), 'មេរោគ'),
+    (re.compile(r'កេមវិធី'), 'កម្មវិធី'),
+    (re.compile(r'បប្?ប[ីើ]+|បប្?បី'), 'ប្រើ'),
+    (re.compile(r'ព្?ព្?ពួក'), 'ពួក'),
+    (re.compile(r'ប្?ព្?េ'), 'ព្រម'),
+    (re.compile(r'ព្?ពា\s*បាទ'), 'ព្យាបាទ'),
+    (re.compile(r'បេបោ[គ៌]+'), 'មេរោគ'),
+    (re.compile(r'កេមវិធី'), 'កម្មវិធី'),
+    (re.compile(r'ទប្?េង់'), 'ទម្រង់'),
+    (re.compile(r'បសេងៗ?'), 'ផ្សេងៗ'),
+    (re.compile(r'បទៀត្?'), 'ទៀត'),
+    (re.compile(r'បនកូដ'), 'នៃកូដ'),
+    (re.compile(r'ប្?ត្ូវ'), 'ត្រូវ'),
+    (re.compile(r'ត្?ំប\s*[ីើ]+ង|ត្ំបីង|តំបីង'), 'ដំឡើង'),
+    (re.compile(r'បោយ'), 'ដោយ'),
+    (re.compile(r'គ្ម[មត]*ន'), 'គ្មាន'),
+    (re.compile(r'បប្បីប្បាស់|បប្រើបប្រាស់'), 'ប្រើប្រាស់'),
+    (re.compile(r'បធីវ|បធវី'), 'ធ្វើ'),
+    (re.compile(r'ប្ប?េូល'), 'ប្រមូល'),
+    (re.compile(r'វដល'), 'ដែល'),
+    (re.compile(r'រកា\s*ទត?ក\s*ខ?|រកាទុក'), 'រក្សាទុក'),
+    (re.compile(r'កតនង|កនតង|ទុកខក្នុង'), 'ទុកក្នុង'),
+    (re.compile(r'កតនង|កនតង'), 'ក្នុង'),
+    (re.compile(r'បបីក'), 'បើក'),
+    (re.compile(r'ផ្ទំង'), 'ផ្ទាំង'),
+    (re.compile(r'របវនថេ'), 'បន្ថែម'),
+    (re.compile(r'បូ្រ|ប្ូរ|បូរ'), 'ប្តូរ'),
+    (re.compile(r'ទិសបៅ'), 'ទិសដៅ'),
+    (re.compile(r'រតករក'), 'រុករក'),
+    (re.compile(r'ភាពងា\s*ងមរោេះ|ភាពងាFfRមរោេះ'), 'ភាពងាយរងគ្រោះ'),
+    (re.compile(r'បបចេកវិទា'), 'បច្ចេកវិទ្យា'),
+    (re.compile(r'សន្ិសតខ'), 'សន្តិសុខ'),
+    (re.compile(r'បគ្មលនបោបាយ'), 'គោលនយោបាយ'),
+    (re.compile(r'បត្ី|បតី'), 'តើ'),
+    (re.compile(r'សំបៅ'), 'សំដៅ'),
+    (re.compile(r'បៅបលី|បៅលើ'), 'ទៅលើ'),
+    (re.compile(r'បរិសាថន\s*សា?ត|បរិសាថនសាត|បរិសាថ នសាា ត្'), 'បរិស្ថានស្អាត'),
+    (re.compile(r'សំបៅ'), 'សំដៅ'),
+    (re.compile(r'បៅបលី'), 'ទៅលើ'),
+    (re.compile(r'មា\s*សល់\s*វែ|មា៉ាល់វវ'), 'ម៉ាល់វែរ'),
+    (re.compile(r'គោលបំណងមេរៀនៀន'), 'គោលបំណងមេរៀន'),
 
 ]
 
@@ -321,7 +464,10 @@ class KhmerValidator:
             "កណ្ដុរស្ដាំ", "កណ្ដុរឆ្វេង", "ម៉ាស៊ីនបោះពុម្ព",
             "កែសម្រួលឧបករណ៍", "កែប្រែការកំណត់", "ភាសាក្តារចុច",
             "ដោះស្រាយបញ្ហា", "វគ្គបណ្ដុះបណ្ដាល", "ទូរស័ព្ទឆ្លាតវៃ",
-            "សេវាកម្មអ៊ីនធឺណិត", "បច្ចេកវិទ្យាទូរស័ព្ទ", "ថេបប្លេត"
+            "សេវាកម្មអ៊ីនធឺណិត", "បច្ចេកវិទ្យាទូរស័ព្ទ", "ថេបប្លេត",
+            "ម៉ាល់វែរ", "ម៉ាល់វែ", "មេរោគ", "វិធីសាស្ត្រការពារ",
+            "បរិស្ថាន", "បរិស្ថានស្អាត", "សុខុមាលភាព", "បៃតង",
+            "សុខភាព", "ព័ត៌មានវិទ្យា", "គោលនយោបាយ", "ភាពងាយរងគ្រោះ"
         ]
         for compound in tech_compounds:
             norm = unicodedata.normalize("NFC", compound)
@@ -329,6 +475,18 @@ class KhmerValidator:
             for i in range(1, len(norm) + 1):
                 self.prefixes.add(norm[:i])
                 
+        # Add common typing variants for coeng da/ta and na/na
+        coeng_variants = set()
+        for w in list(self.words):
+            if '\u17d2\u178a' in w:
+                coeng_variants.add(w.replace('\u17d2\u178a', '\u17d2\u178f'))
+            elif '\u17d2\u178f' in w:
+                coeng_variants.add(w.replace('\u17d2\u178f', '\u17d2\u178a'))
+        for cv in coeng_variants:
+            self.words.add(cv)
+            for i in range(1, len(cv) + 1):
+                self.prefixes.add(cv[:i])
+
         # Build first consonant and consonant skeleton index for dynamic spelling & character repair
         self.first_cons_index: Dict[str, List[Tuple[str, str]]] = {}
         for w in self.words:
@@ -418,6 +576,18 @@ class KhmerValidator:
                 repaired_parts.append(part)
                 continue
                 
+            # If part contains any recognized words (e.g. វគ្គ + បណ្តុះ), repair sub-tokens individually
+            if len(tokens) > 1 and any(t in self.words for t in tokens):
+                repaired_tokens = []
+                for t in tokens:
+                    if len(t) >= 2 and t not in self.words:
+                        t_rep = self.auto_repair_token(t)
+                        repaired_tokens.append(t_rep)
+                    else:
+                        repaired_tokens.append(t)
+                repaired_parts.append("".join(repaired_tokens))
+                continue
+
             # 1. Try repairing the segment as a whole
             rep = self.auto_repair_token(part)
             if rep in self.words:

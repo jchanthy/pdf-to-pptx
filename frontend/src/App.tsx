@@ -51,7 +51,7 @@ export function App() {
     setLanguage((prev) => (prev === 'km' ? 'en' : 'km'));
   };
 
-  const handleUploadSubmit = async (pptxFile: File, pdfFile: File | null) => {
+  const handleUploadSubmit = async (pptxFile: File | null, pdfFile: File | null) => {
     setIsLoading(true);
     setErrorMessage(null);
     try {

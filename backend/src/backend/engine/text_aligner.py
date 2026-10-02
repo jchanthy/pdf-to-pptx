@@ -173,8 +173,8 @@ def align_slide_with_pdf(
         if not best_line or re.sub(r'\s+', '', text) == re.sub(r'\s+', '', best_line):
             continue
             
-        # High confidence match threshold
-        if score >= 0.70 and text != best_line:
+        # High confidence match threshold (0.60 to support heavily corrupted legacy fonts)
+        if score >= 0.60 and text != best_line:
             fine_alignments = extract_word_alignments(text, best_line)
             
             if fine_alignments:
