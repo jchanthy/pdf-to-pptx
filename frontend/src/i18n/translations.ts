@@ -10,6 +10,8 @@ export const translations = {
     step_download: "Download PPTX",
     
     // Upload Zone
+    upload_pdf_title: "Upload PDF Document",
+    upload_pdf_desc: "Select or drag & drop your PDF file to convert into PowerPoint with verified Khmer Unicode spelling",
     target_pptx_title: "Target PPTX File",
     target_pptx_desc: "Corrupted or legacy font presentation (.pptx)",
     reference_pdf_title: "Reference PDF Document",
@@ -111,6 +113,8 @@ export const translations = {
     step_download: "៣. ទាញយកឯកសារកែរួច",
     
     // Upload Zone
+    upload_pdf_title: "ផ្ទុកឡើងឯកសារ PDF",
+    upload_pdf_desc: "ជ្រើសរើស ឬទម្លាក់ឯកសារ PDF របស់អ្នក ដើម្បីបំប្លែងទៅជា PowerPoint ជាមួយអក្ខរាវិរុទ្ធភាសាខ្មែរត្រឹមត្រូវ ១០០%",
     target_pptx_title: "ឯកសារ PPTX គោលដៅ (អក្សរខូច ឬ ហ្វុនចាស់)",
     target_pptx_desc: "ឯកសារ PowerPoint ដែលមានអក្សរខូច ឬ ប្រើពុម្ពអក្សរ Limon/ABC (.pptx)",
     reference_pdf_title: "ឯកសារ PDF យោង (ជម្រើសបន្ថែម)",

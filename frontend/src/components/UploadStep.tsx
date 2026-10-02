@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import {
   Upload,
-  FileCheck,
   FileText,
   Trash2,
   Settings,
@@ -36,30 +35,16 @@ export const UploadStep: React.FC<UploadStepProps> = ({
 }) => {
   const t = translations[language];
 
-  const [pptxFile, setPptxFile] = useState<File | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [dragOverPptx, setDragOverPptx] = useState(false);
   const [dragOverPdf, setDragOverPdf] = useState(false);
 
-  const pptxInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + ' B';
     else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
     else return (bytes / 1048576).toFixed(1) + ' MB';
-  };
-
-  const handlePptxDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOverPptx(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (file.name.toLowerCase().endsWith('.pptx')) {
-        setPptxFile(file);
-      }
-    }
   };
 
   const handlePdfDrop = (e: React.DragEvent) => {
@@ -75,12 +60,12 @@ export const UploadStep: React.FC<UploadStepProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pptxFile && !pdfFile) return;
-    onSubmit(pptxFile, pdfFile);
+    if (!pdfFile) return;
+    onSubmit(null, pdfFile);
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-12">
+    <div className="max-w-3xl mx-auto space-y-8 pb-12">
       {/* Hero Welcome */}
       <div className="text-center space-y-3 pt-2">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold">
@@ -91,209 +76,108 @@ export const UploadStep: React.FC<UploadStepProps> = ({
           {t.app_title}: <span className="text-indigo-600">{t.app_subtitle}</span>
         </h1>
         <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-600 leading-relaxed font-khmer">
-          {t.tagline}
+          {language === 'km'
+            ? 'ផ្ទុកឡើងឯកសារ PDF ដើម្បីបំប្លែងទៅជា PowerPoint (PPTX) ដែលអាចកែប្រែបាន និងជួសជុលអក្ខរាវិរុទ្ធអក្សរខ្មែរយូនីកូដត្រឹមត្រូវ ១០០% ផ្អែកលើវចនានុក្រម ជួន ណាត។'
+            : 'Upload a PDF presentation to automatically convert it into editable PowerPoint slides with 100% verified Khmer Unicode spelling restoration.'}
         </p>
-
-        {/* Feature highlight badge */}
-        <div className="inline-flex items-center space-x-2 text-xs font-medium text-emerald-800 bg-emerald-50 px-4 py-1.5 rounded-full border border-emerald-200 shadow-xs">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="font-khmer">{t.pdf_only_hint}</span>
-        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Dual Upload Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Target PPTX Upload */}
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-bold text-slate-800 flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block" />
-                <span>{t.target_pptx_title}</span>
-                {!pdfFile && <span className="text-rose-500 font-bold">*</span>}
-              </label>
-              <span className="text-xs text-slate-400 font-mono">.pptx</span>
-            </div>
-
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOverPptx(true);
-              }}
-              onDragLeave={() => setDragOverPptx(false)}
-              onDrop={handlePptxDrop}
-              onClick={() => pptxInputRef.current?.click()}
-              className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 flex-1 flex flex-col justify-center items-center ${
-                dragOverPptx
-                  ? 'border-indigo-500 bg-indigo-50/70 scale-[1.01]'
-                  : pptxFile
-                  ? 'border-indigo-300 bg-indigo-50/30'
-                  : 'border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50/80 shadow-xs'
-              }`}
-            >
-              <input
-                ref={pptxInputRef}
-                type="file"
-                accept=".pptx"
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setPptxFile(e.target.files[0]);
-                  }
-                }}
-              />
-
-              {pptxFile ? (
-                <div className="space-y-3 w-full">
-                  <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100">
-                    <FileCheck className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 truncate max-w-[280px] mx-auto">
-                      {pptxFile.name}
-                    </p>
-                    <p className="text-xs text-indigo-700 font-semibold mt-0.5">
-                      {formatFileSize(pptxFile.size)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2 pt-1">
-                    <span className="inline-flex items-center text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                      <CheckCircle2 className="w-3 h-3 mr-1" /> Ready
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPptxFile(null);
-                        if (pptxInputRef.current) pptxInputRef.current.value = '';
-                      }}
-                      className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                      title="Remove file"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-slate-400 font-khmer">
-                    {t.drag_drop_replace}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                    <Upload className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700 font-khmer">
-                      {t.drag_drop_hint}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1 font-khmer">
-                      {t.target_pptx_desc}
-                    </p>
-                  </div>
-                  <span className="inline-block px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    Browse .pptx
-                  </span>
-                </div>
-              )}
-            </div>
+        {/* Single PDF Upload Zone */}
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-bold text-slate-800 flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block" />
+              <span>{t.upload_pdf_title}</span>
+              <span className="text-rose-500 font-bold">*</span>
+            </label>
+            <span className="text-xs text-slate-400 font-mono">.pdf</span>
           </div>
 
-          {/* Reference PDF Upload (Optional) */}
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-bold text-slate-800 flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block" />
-                <span>{t.reference_pdf_title}</span>
-                <span className="text-xs text-indigo-600 font-medium">
-                  {!pptxFile && pdfFile
-                    ? (language === 'km' ? '(បំប្លែងទៅ PPTX)' : '(Direct to PPTX)')
-                    : (language === 'km' ? '(ផ្ទៀងផ្ទាត់ ឬ បំប្លែង)' : '(Reference or Convert)')}
-                </span>
-              </label>
-              <span className="text-xs text-slate-400 font-mono">.pdf</span>
-            </div>
-
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOverPdf(true);
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOverPdf(true);
+            }}
+            onDragLeave={() => setDragOverPdf(false)}
+            onDrop={handlePdfDrop}
+            onClick={() => pdfInputRef.current?.click()}
+            className={`relative border-2 border-dashed rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200 flex flex-col justify-center items-center ${
+              dragOverPdf
+                ? 'border-indigo-500 bg-indigo-50/70 scale-[1.01]'
+                : pdfFile
+                ? 'border-indigo-400 bg-indigo-50/30'
+                : 'border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50/80 shadow-xs'
+            }`}
+          >
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setPdfFile(e.target.files[0]);
+                }
               }}
-              onDragLeave={() => setDragOverPdf(false)}
-              onDrop={handlePdfDrop}
-              onClick={() => pdfInputRef.current?.click()}
-              className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 flex-1 flex flex-col justify-center items-center ${
-                dragOverPdf
-                  ? 'border-violet-500 bg-violet-50/70 scale-[1.01]'
-                  : pdfFile
-                  ? 'border-violet-300 bg-violet-50/30'
-                  : 'border-slate-300 bg-white hover:border-violet-400 hover:bg-slate-50/80 shadow-xs'
-              }`}
-            >
-              <input
-                ref={pdfInputRef}
-                type="file"
-                accept=".pdf"
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setPdfFile(e.target.files[0]);
-                  }
-                }}
-              />
+            />
 
-              {pdfFile ? (
-                <div className="space-y-3 w-full">
-                  <div className="w-14 h-14 mx-auto rounded-2xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-100">
-                    <FileText className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 truncate max-w-[280px] mx-auto">
-                      {pdfFile.name}
-                    </p>
-                    <p className="text-xs text-violet-700 font-semibold mt-0.5">
-                      {formatFileSize(pdfFile.size)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2 pt-1">
-                    <span className="inline-flex items-center text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                      <CheckCircle2 className="w-3 h-3 mr-1" /> Reference Ready
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPdfFile(null);
-                        if (pdfInputRef.current) pdfInputRef.current.value = '';
-                      }}
-                      className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                      title="Remove file"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-slate-400 font-khmer">
-                    {t.drag_drop_replace}
+            {pdfFile ? (
+              <div className="space-y-4 w-full max-w-md mx-auto">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100">
+                  <FileText className="w-8 h-8" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-slate-900 truncate">
+                    {pdfFile.name}
+                  </p>
+                  <p className="text-xs text-indigo-700 font-semibold mt-1">
+                    {formatFileSize(pdfFile.size)}
                   </p>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="w-14 h-14 mx-auto rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100">
-                    <FileText className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700 font-khmer">
-                      {t.drag_drop_hint}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1 font-khmer">
-                      {t.reference_pdf_desc}
-                    </p>
-                  </div>
-                  <span className="inline-block px-3 py-1 rounded-lg text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200">
-                    Browse .pdf
+                <div className="flex items-center justify-center space-x-3 pt-1">
+                  <span className="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                    {language === 'km' ? 'រួចរាល់សម្រាប់ការបំប្លែង' : 'Ready to Convert'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPdfFile(null);
+                      if (pdfInputRef.current) pdfInputRef.current.value = '';
+                    }}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                    title="Remove file"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400 font-khmer pt-1">
+                  {t.drag_drop_replace}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-w-md mx-auto">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-xs">
+                  <Upload className="w-8 h-8" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-slate-800 font-khmer">
+                    {t.drag_drop_hint}
+                  </p>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 font-khmer leading-relaxed">
+                    {t.upload_pdf_desc}
+                  </p>
+                </div>
+                <div>
+                  <span className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-md shadow-indigo-100 hover:bg-indigo-700 transition">
+                    <FileText className="w-4 h-4" />
+                    <span>Browse .pdf Document</span>
                   </span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -352,16 +236,15 @@ export const UploadStep: React.FC<UploadStepProps> = ({
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50/50 text-slate-800 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-hidden transition"
               >
                 <option value="auto">{t.mode_auto}</option>
-                <option value="pdf_alignment">{t.mode_pdf}</option>
                 <option value="dictionary_heuristic">{t.mode_dict}</option>
                 <option value="gemini_ai">{t.mode_gemini}</option>
               </select>
               <p className="text-xs text-slate-500">
                 {options.mode === 'auto'
-                  ? 'Combines heuristic rules, Limon transliteration, and PDF alignment.'
+                  ? 'Combines Chuon Nath dictionary, consonant skeleton matching, and regex healing.'
                   : options.mode === 'gemini_ai'
                   ? 'Leverages Gemini 2.5 Flash for deep linguistic restoration.'
-                  : 'Fast rule-based processing.'}
+                  : 'Fast offline rule-based processing.'}
               </p>
             </div>
           </div>
@@ -406,7 +289,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={(!pptxFile && !pdfFile) || isLoading}
+            disabled={!pdfFile || isLoading}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-8 py-3.5 rounded-xl text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg shadow-indigo-200 transition active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
@@ -417,15 +300,10 @@ export const UploadStep: React.FC<UploadStepProps> = ({
                 </svg>
                 <span className="font-khmer">{t.btn_processing}</span>
               </>
-            ) : !pptxFile && pdfFile ? (
-              <>
-                <Sparkles className="w-5 h-5" />
-                <span className="font-khmer">{t.btn_convert_pdf}</span>
-              </>
             ) : (
               <>
                 <Sparkles className="w-5 h-5" />
-                <span className="font-khmer">{t.btn_start_processing}</span>
+                <span className="font-khmer">{t.btn_convert_pdf}</span>
               </>
             )}
           </button>
