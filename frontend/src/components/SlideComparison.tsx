@@ -7,6 +7,8 @@ import {
   Edit3,
   Check,
   X,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import type { Language, SlideDiff } from '../types';
 import { translations } from '../i18n/translations';
@@ -28,6 +30,7 @@ export const SlideComparison: React.FC<SlideComparisonProps> = ({
   const [currentSlideIdx, setCurrentSlideIdx] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState('');
+  const [showHighlights, setShowHighlights] = useState(false);
 
   const slide = slides[currentSlideIdx];
 
@@ -66,10 +69,24 @@ export const SlideComparison: React.FC<SlideComparisonProps> = ({
   const renderHighlightedText = (text: string, isOriginal: boolean) => {
     if (!text) return <span className="text-slate-400 italic">Empty text</span>;
 
-    // Highlight replaced segments
+    // If highlights are toggled off, render clean pure Unicode text
+    if (!showHighlights) {
+      return text;
+    }
+
+    // Filter terms that are strictly complete words/meaningful chunks (length >= 2, not sub-vowels or standalone coengs)
+    // to prevent fracturing Khmer character clusters in rendering
+    const validReps = slide.replacements.filter((rep) => {
+      const term = isOriginal ? rep.original : rep.replacement;
+      if (!term || term.trim().length < 2) return false;
+      // Do not highlight standalone vowels or coeng signs which fragment Unicode ligatures
+      if (/^[\u17B6-\u17D3]+$/.test(term.trim())) return false;
+      return true;
+    });
+
     let elements: ReactNode[] = [text];
 
-    slide.replacements.forEach((rep, rIdx) => {
+    validReps.forEach((rep, rIdx) => {
       const term = isOriginal ? rep.original : rep.replacement;
       if (!term) return;
 
@@ -82,7 +99,7 @@ export const SlideComparison: React.FC<SlideComparisonProps> = ({
               newElements.push(
                 <mark
                   key={`mark-${rIdx}-${elIdx}-${pIdx}`}
-                  className={`px-1.5 py-0.5 rounded text-xs font-semibold mx-0.5 transition ${
+                  className={`px-1 py-0.5 rounded text-xs font-semibold mx-0.5 transition ${
                     isOriginal
                       ? 'bg-rose-100 text-rose-800 line-through decoration-rose-500/70'
                       : 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold'
@@ -223,6 +240,20 @@ export const SlideComparison: React.FC<SlideComparisonProps> = ({
               <span className="text-xs font-semibold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md">
                 {targetFont}
               </span>
+              {!isEditing && (
+                <button
+                  onClick={() => setShowHighlights(!showHighlights)}
+                  className={`inline-flex items-center space-x-1 px-2.5 py-1 text-xs font-bold rounded-lg border transition cursor-pointer ${
+                    showHighlights
+                      ? 'bg-amber-100 text-amber-900 border-amber-300'
+                      : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                  }`}
+                  title={showHighlights ? t.toggle_clean_view : t.toggle_highlights}
+                >
+                  {showHighlights ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  <span className="font-khmer">{showHighlights ? t.toggle_clean_view : t.toggle_highlights}</span>
+                </button>
+              )}
               {!isEditing ? (
                 <button
                   onClick={handleStartEdit}
