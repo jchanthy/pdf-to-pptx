@@ -1,9 +1,12 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
   Layers,
   Table,
+  Edit3,
+  Check,
+  X,
 } from 'lucide-react';
 import type { Language, SlideDiff } from '../types';
 import { translations } from '../i18n/translations';
@@ -12,15 +15,45 @@ interface SlideComparisonProps {
   slides: SlideDiff[];
   language: Language;
   targetFont: string;
+  onUpdateSlideText?: (slideIdx: number, newText: string) => void;
 }
 
 export const SlideComparison: React.FC<SlideComparisonProps> = ({
   slides,
   language,
   targetFont,
+  onUpdateSlideText,
 }) => {
   const t = translations[language];
   const [currentSlideIdx, setCurrentSlideIdx] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedText, setEditedText] = useState('');
+
+  const slide = slides[currentSlideIdx];
+
+  useEffect(() => {
+    setIsEditing(false);
+    if (slide) {
+      setEditedText(slide.preview_corrected_text || '');
+    }
+  }, [currentSlideIdx, slide]);
+
+  const handleStartEdit = () => {
+    setEditedText(slide?.preview_corrected_text || '');
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedText(slide?.preview_corrected_text || '');
+  };
+
+  const handleSaveEdit = () => {
+    if (onUpdateSlideText && slide) {
+      onUpdateSlideText(currentSlideIdx, editedText);
+    }
+    setIsEditing(false);
+  };
 
   if (!slides || slides.length === 0) {
     return (
@@ -29,8 +62,6 @@ export const SlideComparison: React.FC<SlideComparisonProps> = ({
       </div>
     );
   }
-
-  const slide = slides[currentSlideIdx];
 
   const renderHighlightedText = (text: string, isOriginal: boolean) => {
     if (!text) return <span className="text-slate-400 italic">Empty text</span>;
@@ -43,14 +74,14 @@ export const SlideComparison: React.FC<SlideComparisonProps> = ({
       if (!term) return;
 
       const newElements: ReactNode[] = [];
-      elements.forEach((el) => {
+      elements.forEach((el, elIdx) => {
         if (typeof el === 'string') {
           const parts = el.split(term);
           parts.forEach((part, pIdx) => {
             if (pIdx > 0) {
               newElements.push(
                 <mark
-                  key={`${rIdx}-${pIdx}`}
+                  key={`mark-${rIdx}-${elIdx}-${pIdx}`}
                   className={`px-1.5 py-0.5 rounded text-xs font-semibold mx-0.5 transition ${
                     isOriginal
                       ? 'bg-rose-100 text-rose-800 line-through decoration-rose-500/70'
@@ -188,18 +219,78 @@ export const SlideComparison: React.FC<SlideComparisonProps> = ({
                 {t.slide_corrected}
               </h4>
             </div>
-            <span className="text-xs font-semibold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md">
-              {targetFont}
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md">
+                {targetFont}
+              </span>
+              {!isEditing ? (
+                <button
+                  onClick={handleStartEdit}
+                  className="inline-flex items-center space-x-1 px-2.5 py-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg cursor-pointer transition"
+                  title="Directly edit preview text"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span className="font-khmer">{t.edit}</span>
+                </button>
+              ) : (
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    onClick={handleSaveEdit}
+                    className="inline-flex items-center space-x-1 px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs cursor-pointer transition"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span className="font-khmer">{t.save}</span>
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="inline-flex items-center space-x-1 px-2 py-1 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer transition"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span className="font-khmer">{t.cancel}</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div
             className="p-6 flex-1 min-h-[300px] flex flex-col justify-start bg-slate-50/30"
             style={{ fontFamily: `'${targetFont}', 'Kantumruy Pro', sans-serif` }}
           >
-            <div className="prose prose-sm max-w-none text-slate-900 whitespace-pre-line leading-relaxed">
-              {renderHighlightedText(slide.preview_corrected_text, false)}
-            </div>
+            {isEditing ? (
+              <div className="flex flex-col h-full space-y-3">
+                <div className="text-xs font-medium text-slate-500 flex justify-between items-center">
+                  <span>{t.edit_slide_text}</span>
+                  <span className="text-slate-400">Markdown / Plain text</span>
+                </div>
+                <textarea
+                  value={editedText}
+                  onChange={(e) => setEditedText(e.target.value)}
+                  rows={12}
+                  className="w-full flex-1 p-3.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-hidden leading-relaxed resize-y font-sans shadow-inner"
+                  style={{ fontFamily: `'${targetFont}', 'Kantumruy Pro', sans-serif` }}
+                  placeholder="Enter corrected Khmer Unicode text..."
+                />
+                <div className="flex justify-end space-x-2 pt-1">
+                  <button
+                    onClick={handleCancelEdit}
+                    className="px-3 py-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg cursor-pointer"
+                  >
+                    {t.edit_slide_cancel}
+                  </button>
+                  <button
+                    onClick={handleSaveEdit}
+                    className="px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs cursor-pointer"
+                  >
+                    {t.edit_slide_save}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="prose prose-sm max-w-none text-slate-900 whitespace-pre-line leading-relaxed">
+                {renderHighlightedText(slide.preview_corrected_text, false)}
+              </div>
+            )}
           </div>
         </div>
       </div>

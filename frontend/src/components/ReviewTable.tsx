@@ -10,6 +10,7 @@ import {
   FileCheck,
   CheckCheck,
   XCircle,
+  PlusCircle,
 } from 'lucide-react';
 import type { Language, ReplacementItem } from '../types';
 import { translations } from '../i18n/translations';
@@ -37,6 +38,12 @@ export const ReviewTable: React.FC<ReviewTableProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
 
+  // Add custom rule state
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [customOrig, setCustomOrig] = useState('');
+  const [customRepl, setCustomRepl] = useState('');
+  const [customSlide, setCustomSlide] = useState<number>(-1); // -1 = all slides
+
   const handleStartEdit = (item: ReplacementItem) => {
     setEditingId(item.id);
     setEditValue(item.replacement);
@@ -56,6 +63,28 @@ export const ReviewTable: React.FC<ReviewTableProps> = ({
     });
     onReplacementsChange(updated);
     setEditingId(null);
+  };
+
+  const handleAddCustomFix = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customOrig.trim() || !customRepl.trim()) return;
+
+    const newItem: ReplacementItem = {
+      id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      slide_index: customSlide === -1 ? 0 : customSlide,
+      shape_id: 'custom_shape',
+      original: customOrig.trim(),
+      replacement: customRepl.trim(),
+      confidence: 1.0,
+      source: 'user_edit',
+      status: 'accepted',
+      explanation: customSlide === -1 ? 'User custom rule (All slides)' : `User custom rule (Slide ${customSlide + 1})`,
+    };
+
+    onReplacementsChange([newItem, ...replacements]);
+    setCustomOrig('');
+    setCustomRepl('');
+    setShowAddCustom(false);
   };
 
   const handleToggleStatus = (id: string, newStatus: 'accepted' | 'rejected') => {
@@ -194,8 +223,94 @@ export const ReviewTable: React.FC<ReviewTableProps> = ({
             <XCircle className="w-3.5 h-3.5" />
             <span className="font-khmer">{t.btn_reject_all}</span>
           </button>
+
+          {/* Add Custom Fix Button */}
+          <button
+            onClick={() => setShowAddCustom(!showAddCustom)}
+            className="inline-flex items-center space-x-1 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-xs transition cursor-pointer"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span className="font-khmer">{t.add_custom_fix}</span>
+          </button>
         </div>
       </div>
+
+      {/* Add Custom Fix Panel */}
+      {showAddCustom && (
+        <form
+          onSubmit={handleAddCustomFix}
+          className="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4 shadow-xs space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-indigo-900 font-khmer flex items-center space-x-1.5">
+              <PlusCircle className="w-4 h-4 text-indigo-600" />
+              <span>{t.add_custom_fix_title}</span>
+            </h4>
+            <button
+              type="button"
+              onClick={() => setShowAddCustom(false)}
+              className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-600 mb-1 font-khmer">
+                {t.add_custom_orig}
+              </label>
+              <input
+                type="text"
+                required
+                value={customOrig}
+                onChange={(e) => setCustomOrig(e.target.value)}
+                placeholder="e.g. គមានាគមាន៍"
+                className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-xs text-rose-700 font-mono font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-600 mb-1 font-khmer">
+                {t.add_custom_repl}
+              </label>
+              <input
+                type="text"
+                required
+                value={customRepl}
+                onChange={(e) => setCustomRepl(e.target.value)}
+                placeholder="e.g. គមនាគមន៍"
+                className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-xs text-emerald-800 font-khmer font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                style={{ fontFamily: `'${targetFont}', 'Kantumruy Pro', sans-serif` }}
+              />
+            </div>
+            <div className="flex items-end space-x-2">
+              <div className="flex-1">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1 font-khmer">
+                  {t.table_col_slide}
+                </label>
+                <select
+                  value={customSlide}
+                  onChange={(e) => setCustomSlide(parseInt(e.target.value))}
+                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-xs font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 font-khmer"
+                >
+                  <option value={-1}>{t.all_slides}</option>
+                  {Array.from(new Set(replacements.map((r) => r.slide_index))).sort((a,b)=>a-b).map((sIdx) => (
+                    <option key={sIdx} value={sIdx}>
+                      Slide {sIdx + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer font-khmer h-[38px] shrink-0"
+              >
+                {t.add_custom_submit}
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
 
       {/* Table Content */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">

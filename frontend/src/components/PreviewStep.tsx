@@ -39,7 +39,39 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
   const t = translations[language];
 
   const [activeTab, setActiveTab] = useState<'comparison' | 'table'>('comparison');
+  const [slides, setSlides] = useState(data.slides);
   const [replacements, setReplacements] = useState<ReplacementItem[]>(data.all_replacements);
+
+  const handleUpdateSlideText = (slideIdx: number, newText: string) => {
+    // 1. Update slide preview text
+    const updatedSlides = slides.map((s, idx) => {
+      if (idx === slideIdx) {
+        return {
+          ...s,
+          preview_corrected_text: newText,
+        };
+      }
+      return s;
+    });
+    setSlides(updatedSlides);
+
+    // 2. Add custom replacement record if slide original differed
+    const targetSlide = slides[slideIdx];
+    if (targetSlide && targetSlide.original_text !== newText) {
+      const customItem: ReplacementItem = {
+        id: `slide-edit-${slideIdx}-${Date.now()}`,
+        slide_index: slideIdx,
+        shape_id: 'custom_shape',
+        original: targetSlide.original_text,
+        replacement: newText,
+        confidence: 1.0,
+        source: 'user_edit',
+        status: 'accepted',
+        explanation: `Direct slide edit by user on Slide ${slideIdx + 1}`,
+      };
+      setReplacements((prev: ReplacementItem[]) => [customItem, ...prev.filter((p: ReplacementItem) => p.slide_index !== slideIdx || p.source !== 'user_edit')]);
+    }
+  };
 
   const acceptedCount = replacements.filter(
     (r) => r.status === 'accepted' || r.status === 'modified'
@@ -166,9 +198,10 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
       {/* Tab Panels */}
       {activeTab === 'comparison' ? (
         <SlideComparison
-          slides={data.slides}
+          slides={slides}
           language={language}
           targetFont={targetFont}
+          onUpdateSlideText={handleUpdateSlideText}
         />
       ) : (
         <ReviewTable
