@@ -55,6 +55,22 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "បវ់": "របស់",
     "វូម្ក្បាកដ": "សូមប្រាកដ",
     "វូម្": "សូម",
+    # Malware, security, cloud, and methods:
+    "ម៉ា ល់វវ": "ម៉ាល់វែរ",
+    "ម៉ាល់វវ": "ម៉ាល់វែរ",
+    "ម៉ា ល់វែរ": "ម៉ាល់វែរ",
+    "ម៉ាល់វែ": "ម៉ាល់វែរ",
+    "ម៉ា ល់វ": "ម៉ាល់វែរ",
+    "ម៉ាល់វ": "ម៉ាល់វែរ",
+    "កម្មវិធីAាបាទ": "កម្មវិធីព្យាបាទ",
+    "កម្មវិធី Aាបាទ": "កម្មវិធីព្យាបាទ",
+    "Aាបាទ": "ព្យាបាទ",
+    "លើAAួក": "លើពពក",
+    "លើ AAួក": "លើពពក",
+    "AAួក": "ពពក",
+    "េវិធី": "វិធី",
+    "េវិធីសាស្រ្ត": "វិធីសាស្ត្រ",
+    "េវិធីសាស្ត្រ": "វិធីសាស្ត្រ",
     # Security & lesson learning objectives:
     "សុវតិថភាព": "សុវត្ថិភាព",
     "សុវតិថ": "សុវត្ថិ",
@@ -1356,10 +1372,28 @@ def repair_khmer_heuristics(text: str) -> Tuple[str, List[Dict[str, str]]]:
     return current, applied
 
 
+_CACHED_DICT_REGEX = None
+_CACHED_DICT_KEYS_LEN = 0
+
+def _get_dict_pattern(combined_dict: Dict[str, str]):
+    global _CACHED_DICT_REGEX, _CACHED_DICT_KEYS_LEN
+    is_default = (len(combined_dict) == len(KHMER_CORRUPTION_DICTIONARY))
+    if is_default and _CACHED_DICT_REGEX is not None and _CACHED_DICT_KEYS_LEN == len(combined_dict):
+        return _CACHED_DICT_REGEX
+    valid_keys = [k for k in sorted(combined_dict.keys(), key=len, reverse=True) if k != combined_dict[k] and k]
+    if not valid_keys:
+        return None
+    pattern = re.compile('|'.join(re.escape(k) for k in valid_keys))
+    if is_default:
+        _CACHED_DICT_REGEX = pattern
+        _CACHED_DICT_KEYS_LEN = len(combined_dict)
+    return pattern
+
+
 def replace_dictionary_terms(text: str, custom_dict: Dict[str, str] = None) -> Tuple[str, List[Tuple[str, str]]]:
     """
     Replaces known corrupted terms with clean Unicode terms.
-    Checks exact matches and substring replacements (longest matches first).
+    Uses single-pass longest-match regex substitution to prevent cascading substring corruptions.
     Returns (corrected_text, list_of_replacements).
     """
     if not text:
@@ -1369,20 +1403,21 @@ def replace_dictionary_terms(text: str, custom_dict: Dict[str, str] = None) -> T
     if custom_dict:
         combined_dict.update(custom_dict)
         
-    # Sort keys by length descending to match longest phrases first
-    sorted_keys = sorted(combined_dict.keys(), key=len, reverse=True)
-    
-    current = text
+    pattern = _get_dict_pattern(combined_dict)
+    if not pattern:
+        return sanitize_khmer_coeng(text), []
+        
     replacements = []
-    
-    for key in sorted_keys:
-        val = combined_dict[key]
-        if key in current and key != val:
-            current = current.replace(key, val)
-            replacements.append((key, val))
-            
+    def repl_func(match):
+        orig_key = match.group(0)
+        replacement = combined_dict[orig_key]
+        replacements.append((orig_key, replacement))
+        return replacement
+
+    current = pattern.sub(repl_func, text)
     current = sanitize_khmer_coeng(current)
     return current, replacements
+
 
 
 def extract_word_level_differences(orig: str, fixed: str) -> List[Tuple[str, str]]:

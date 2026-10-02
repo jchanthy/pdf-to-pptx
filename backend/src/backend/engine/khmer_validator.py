@@ -805,6 +805,14 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'សិ\s*ñ\s*ា|សិñា'), 'សិក្សា'),
     (re.compile(r'ចំ\s*6\s*ុច|ចំ6ុច'), 'ចំណុច'),
     (re.compile(r'ខា\s*R\s*ក្រោម|ខាRក្រោម|ខា\s*R|ខាR'), 'ខាងក្រោម'),
+    # Malware, malicious program, cloud, and methods:
+    (re.compile(r'ម៉ា\s*ល់វ[វែរ]+|ម៉ាល់វ[វែ]+'), 'ម៉ាល់វែរ'),
+    (re.compile(r'កម្មវិធី\s*A\s*ាបាទ|កម្មវិធី\s*Aាបាទ'), 'កម្មវិធីព្យាបាទ'),
+    (re.compile(r'(?:^|(?<=\s))A\s*ាបាទ|Aាបាទ'), 'ព្យាបាទ'),
+    (re.compile(r'លើ\s*A\s*A\s*ួក|លើ\s*AAួក'), 'លើពពក'),
+    (re.compile(r'(?:^|(?<=\s))A\s*A\s*ួក|AA\s*ួក|AAួក'), 'ពពក'),
+    (re.compile(r'េ\s*វិធីសាស្រ្ត|េ\s*វិធីសាស្ត្រ|េវិធីសាស្រ្ត|េវិធីសាស្ត្រ'), 'វិធីសាស្ត្រ'),
+    (re.compile(r'(?:^|(?<=\s))េ\s*វិធី(?=[\s\n]|$|[ក-អ])|េវិធី(?=[\s\n]|$|[ក-អ])'), 'វិធី'),
 ]
 
 
