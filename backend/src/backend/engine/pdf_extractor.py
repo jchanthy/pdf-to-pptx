@@ -5,7 +5,7 @@ Uses pdfplumber and pypdf to extract clean Khmer Unicode text per page.
 
 import logging
 import unicodedata
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import pypdf
 import pdfplumber
 
@@ -37,7 +37,9 @@ def _process_extracted_lines(raw_text: str) -> Tuple[str, List[str]]:
         return "", []
         
     normalized = unicodedata.normalize("NFC", raw_text)
-    raw_lines = normalized.splitlines()
+    # Pre-heal full text first so cross-line split syllables (e.g. 'ច្\nមុះ' -> 'ឈ្មោះ') are restored
+    pre_healed, _ = restore_khmer_text(normalized)
+    raw_lines = pre_healed.splitlines()
     clean_lines = []
     
     for line in raw_lines:
