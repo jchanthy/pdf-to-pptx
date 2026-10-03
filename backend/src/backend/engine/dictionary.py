@@ -143,7 +143,45 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "ផ្លស់Uតទរ": "ផ្លាស់ប្តូរ",
     "ញឹñញាU់": "ញឹកញាប់",
     "ñមេែិធីñំចាត់មេមោគ": "កម្មវិធីកម្ចាត់មេរោគ",
+    "ñមេែិធី": "កម្មវិធី",
+    "កមេែិធី": "កម្មវិធី",
+    "កមេែ◌ិធី": "កម្មវិធី",
+    "ñមេែធី": "កម្មវិធី",
+    "កមេែធី": "កម្មវិធី",
+    "ឆ្លR": "ឆ្លង",
+    "ñនុR": "ក្នុង",
+    "កនុR": "ក្នុង",
+    "Uណ្តលមោF": "បណ្ដាលឱ្យ",
+    "បណ្តលមោF": "បណ្ដាលឱ្យ",
+    "Uណ្តល": "បណ្ដាល",
+    "Uណ្តាល": "បណ្ដាល",
+    "បណ្តល": "បណ្ដាល",
+    "មោF": "ឱ្យ",
     "ñំចាត់មេមោគ": "កម្ចាត់មេរោគ",
+    # 13 specifically requested common corruptions and typos:
+    "មានៃៅ": "មាននៅ",
+    "ទេៀតព្យូទ័រ": "ទៀតកុំព្យូទ័រ",
+    "ទេៀត": "ទៀត",
+    "ប្កុម": "ក្រុម",
+    "ក្កុម": "ក្រុម",
+    "អ្ផ្ទុកុក": "ផ្ទុក",
+    "អ្ផ្ទុក": "ផ្ទុក",
+    "ប្តឹម្ត្រូវ": "ត្រឹមត្រូវ",
+    "ប្តឹមត្រូវ": "ត្រឹមត្រូវ",
+    "ត្រឹម្ត្រូវ": "ត្រឹមត្រូវ",
+    "ន្នោះ": "នោះ",
+    "ចគ្ស្គាល់": "ស្គាល់",
+    "បូ៊េតតងថយ": "ប៊ូតុងថយ",
+    "បូ៊េតតង": "ប៊ូតុង",
+    "បូតតង": "ប៊ូតុង",
+    "គន្លឹះាុះ:": "គន្លឹះ:",
+    "គន្លឹះាុះ": "គន្លឹះ",
+    "បចងីកត": "បង្កើត",
+    "តូរ ឈ្មោះ": "ប្តូរឈ្មោះ",
+    "តូរឈ្មោះ": "ប្តូរឈ្មោះ",
+    "បសិន ចបី": "ប្រសិនបើ",
+    "បសិនចបី": "ប្រសិនបើ",
+    "បសិន": "ប្រសិន",
     "កាfវñបចនមើRែិញ": "ការកែច្នៃឡើងវិញ",
     "កាf": "ការ",
     "សPំេ": "សន្សំ",
@@ -1373,6 +1411,18 @@ HEURISTIC_RULES: List[Tuple[re.Pattern, str, str]] = [
         '\\1',
         "Remove space before Khmer dependent vowel or accent"
     ),
+    # 16. Deduplicate redundant pre-vowel េ before Sra Ie ៀ (fixes ទេៀត -> ទៀត):
+    (
+        re.compile(r'([\u1780-\u17A2])\u17C1\u17C0'),
+        r'\1\u17C0',
+        "Deduplicate pre-vowel េ before Sra Ie ៀ"
+    ),
+    # 17. Clean invalid colliding vowels ៃ and ៅ:
+    (
+        re.compile(r'\u17C3\u17C5'),
+        '\u17C5',
+        "Clean colliding vowels ៃ and ៅ"
+    ),
 ]
 
 
@@ -1480,8 +1530,19 @@ def replace_dictionary_terms(text: str, custom_dict: Dict[str, str] = None) -> T
         return sanitize_khmer_coeng(text), []
         
     replacements = []
+    try:
+        from .khmer_validator import khmer_validator
+        spans = khmer_validator.protected_spans(text)
+    except Exception:
+        spans = []
+
     def repl_func(match):
         orig_key = match.group(0)
+        s, e = match.span()
+        # Never rewrite part of an already-valid dictionary word (e.g. ខាន inside សំខាន់)
+        for a, b in spans:
+            if a < e and s < b and (s > a or e < b):
+                return orig_key
         replacement = combined_dict[orig_key]
         replacements.append((orig_key, replacement))
         return replacement

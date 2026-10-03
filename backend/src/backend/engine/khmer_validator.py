@@ -22,6 +22,17 @@ DICTIONARY_PATH = os.path.join(DATA_DIR, "khmer_words.txt")
 LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     # Latin 'f' as Khmer 'រ' (only when adjacent to Khmer characters)
     (re.compile(r'(?<=[\u1780-\u17FF])f|f(?=[\u1780-\u17FF])'), 'រ'),
+    # Common legacy ASCII/mixed Latin glyphs in Khmer words
+    (re.compile(r'[ñក]មេែ[\u25cc\u17b6-\u17d3\s]*ធី'), 'កម្មវិធី'),
+    (re.compile(r'ឆ្លR'), 'ឆ្លង'),
+    (re.compile(r'[ñក]នុ[Rង]'), 'ក្នុង'),
+    (re.compile(r'[Uប]ណ្តល\s*មោF|[Uប]ណ្តល\s*ឱ្យ|[Uប]ណ្តល\s*អោយ'), 'បណ្ដាលឱ្យ'),
+    (re.compile(r'[Uប]ណ្តល'), 'បណ្ដាល'),
+    (re.compile(r'មោF'), 'ឱ្យ'),
+    (re.compile(r'(?<=[\u1780-\u17FF])R(?![a-zA-Z0-9])'), 'ង'),
+    (re.compile(r'\bU(?=[\u1780-\u17FF])'), 'ប'),
+    (re.compile(r'\bñ(?=[\u1780-\u17FF])'), 'ក'),
+    (re.compile(r'(?<=[\u1780-\u17FF])F(?![a-zA-Z0-9])'), 'យ'),
     # Specifically identified corrupted phrases and words
     (re.compile(r'េ\s*ត\s*ី\s*ី?\s*ន\s*ធ\s*ឺ\s*ណ\s*ិ\s*ត|េតី[ី\s]*នធឺណិ?\s*ត'), 'អ៊ីនធឺណិត'),
     (re.compile(r'A\s*ី\s*េតី[ី\s]*នធឺណិ?\s*ត'), 'ពីអ៊ីនធឺណិត'),
@@ -396,7 +407,7 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'ពនាា?'), 'ពន្លា'),
     (re.compile(r'បង្ហា\s*ប់'), 'បង្រួម'),
     (re.compile(r'ស្ខេ'), 'ខ្សែ'),
-    (re.compile(r'ខួ?ាន្?'), 'ខ្លួន'),
+    (re.compile(r'ខួាន្?'), 'ខ្លួន'),
     (re.compile(r'អន្តញ្ញា\s*ត'), 'អនុញ្ញាត'),
     (re.compile(r'ទំ[ងញ]'), 'ទាំង'),
     (re.compile(r'អត្បទ'), 'អត្ថបទ'),
@@ -635,7 +646,6 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'(?:^|(?<=\n))\s*ស\)\s*(?=ប្រសិនបើ)'), 'ខ) '),
     (re.compile(r'បញ្ជី\s*ល្?បណ្តាញ|បញ្ជីល្បណ្តាញ'), 'បញ្ជីឈ្មោះបណ្តាញ'),
     (re.compile(r'យក\s*ល្?(?=\s*ដែលអាច)'), 'យកឈ្មោះ'),
-    (re.compile(r'តើ(?=[ក-អ])'), 'តើ '),
     # Lesson 03 - Files & Folders repairs
     (re.compile(r'គ្ន[្ា]*[ឹុះ]+'), 'គន្លឹះ'),
     (re.compile(r'ស្[ផផ្]+[នក្ស]+'), 'ផ្នែក'),
@@ -1104,6 +1114,43 @@ class KhmerValidator:
         valid_count = sum(1 for t in khmer_tokens if t in self.words)
         return valid_count / len(khmer_tokens)
 
+    def protected_spans(self, text: str, min_len: int = 3) -> List[Tuple[int, int]]:
+        """
+        Returns (start, end) spans of tokens that are already valid dictionary words.
+        These spans must never be partially rewritten by a correction rule.
+        """
+        spans: List[Tuple[int, int]] = []
+        pos = 0
+        for tok in self.segment_text(text):
+            idx = text.find(tok, pos)
+            if idx < 0:
+                continue
+            end = idx + len(tok)
+            pos = end
+            if (len(tok) >= min_len and tok in self.words
+                    and any(0x1780 <= ord(c) <= 0x17A2 for c in tok)):
+                spans.append((idx, end))
+        return spans
+
+    def protected_sub(self, pattern: "re.Pattern", repl, text: str) -> str:
+        """
+        Like pattern.sub(repl, text) but skips any match that cuts *through* a valid
+        dictionary word (partial overlap). Matches that fully cover valid words, or that
+        lie in unrecognized (corrupted) regions, are applied normally.
+        """
+        if not pattern.search(text):
+            return text
+        spans = self.protected_spans(text)
+
+        def _sub(m):
+            s, e = m.span()
+            for a, b in spans:
+                if a < e and s < b and (s > a or e < b):
+                    return m.group(0)
+            return repl(m) if callable(repl) else m.expand(repl)
+
+        return pattern.sub(_sub, text)
+
     def decode_and_validate(self, text: str) -> str:
         """
         Applies algorithmic glyph transformations and verifies the decoded result
@@ -1119,10 +1166,18 @@ class KhmerValidator:
         clean_no_punct = re.sub(r'[^\u1780-\u17FF\s]', '', current).strip()
         if clean_no_punct and self.is_valid_word(clean_no_punct):
             return current
+
+        tokens = self.segment_text(current)
+        khmer_tokens = [t for t in tokens if any(0x1780 <= ord(c) <= 0x17A2 for c in t)]
+        orphan_signs = any(
+            t and all(0x17B6 <= ord(c) <= 0x17D3 for c in t) for t in tokens
+        )
+        if khmer_tokens and not orphan_signs and all(t in self.words for t in khmer_tokens):
+            return current
             
-        # Apply transformation patterns
+        # Apply transformation patterns, never cutting through already-valid words
         for pattern, repl in LEGACY_GLYPH_TRANSFORMS:
-            current = pattern.sub(repl, current)
+            current = self.protected_sub(pattern, repl, current)
             
         # Dynamically repair any remaining unrecognized tokens using 56,840-word dictionary
         current = self.repair_unrecognized_tokens(current)

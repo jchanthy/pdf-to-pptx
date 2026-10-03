@@ -41,6 +41,24 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
   const [activeTab, setActiveTab] = useState<'comparison' | 'table'>('comparison');
   const [slides, setSlides] = useState(data.slides);
   const [replacements, setReplacements] = useState<ReplacementItem[]>(data.all_replacements);
+  const [tableFilterSlide, setTableFilterSlide] = useState<number | null>(null);
+
+  const handleToggleReplacement = (id: string, newStatus: 'accepted' | 'rejected') => {
+    const updated = replacements.map((item) => {
+      if (item.id === id) {
+        return { ...item, status: newStatus };
+      }
+      return item;
+    });
+    setReplacements(updated);
+  };
+
+  const handleSwitchToTable = (slideIndex?: number) => {
+    if (slideIndex !== undefined) {
+      setTableFilterSlide(slideIndex);
+    }
+    setActiveTab('table');
+  };
 
   const handleUpdateSlideText = (slideIdx: number, newText: string) => {
     // 1. Update slide preview text
@@ -202,6 +220,8 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
           language={language}
           targetFont={targetFont}
           onUpdateSlideText={handleUpdateSlideText}
+          onToggleReplacementStatus={handleToggleReplacement}
+          onSwitchToTable={handleSwitchToTable}
         />
       ) : (
         <ReviewTable
@@ -209,6 +229,7 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
           onReplacementsChange={setReplacements}
           language={language}
           targetFont={targetFont}
+          initialSlideFilter={tableFilterSlide}
         />
       )}
 
