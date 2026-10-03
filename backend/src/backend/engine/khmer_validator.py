@@ -1085,6 +1085,10 @@ class KhmerValidator:
             for l in range(max_chunk, 0, -1):
                 chunk = text[i:i+l]
                 if chunk in self.words:
+                    # A word cannot end mid-cluster: the next char must not be a
+                    # Coeng or dependent vowel/sign attached to the last consonant.
+                    if i + l < n and 0x17B6 <= ord(text[i + l]) <= 0x17D3:
+                        continue
                     matched_len = l
                     break
                     
