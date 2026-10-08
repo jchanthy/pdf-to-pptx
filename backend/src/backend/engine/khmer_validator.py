@@ -885,6 +885,15 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
 ]
 
 
+KHMER_CLUSTER_RE = re.compile(
+    r'[\u1780-\u17B5\u25CC]'                # Base consonant, independent vowel, or dotted circle
+    r'(?:\u17D2[\u1780-\u17B3])*'          # Any number of subscript consonants
+    r'[\u17C9\u17CA]?'                     # Optional consonant shifter
+    r'[\u17B6-\u17C5]?'                    # Optional dependent vowel
+    r'[\u17C6-\u17D3]*'                    # Optional signs / diacritics
+)
+
+
 def canonicalize_clusters(text: str) -> str:
     """
     Normalizes Khmer Unicode clusters to standard canonical orthography:
@@ -908,8 +917,9 @@ def canonicalize_clusters(text: str) -> str:
     s = s.replace('\u17C6\u17B6', '\u17B6\u17C6')
     s = s.replace('\u17C1\u17C5', '\u17C5')
     s = s.replace('\u17C1\u17BE', '\u17BE')
-    # Reorder misplaced Coeng after dependent vowel (e.g. Consonant + Vowel + Coeng + Subscript -> Consonant + Coeng + Subscript + Vowel)
-    s = re.sub(r'([\u1780-\u17A2])([\u17B6-\u17C5])\u17D2([\u1780-\u17A2])', '\\1\u17d2\\3\\2', s)
+    # Reorder misplaced Coeng after dependent vowel within a single cluster (e.g. ករា្ដ -> ក្ដារ)
+    # Guard against cross-syllable contamination (e.g. ប្បី្បាស់)
+    s = re.sub(r'(?<!\u17D2)([\u1780-\u17A2])([\u17B6-\u17C5])\u17D2([\u1780-\u17A2])(?![^\s\n]*[\u17B6-\u17C5])', '\\1\u17d2\\3\\2', s)
     # Collapse duplicates
     s = re.sub(r'(\u17B6){2,}', r'\1', s)
     s = re.sub(r'(\u17C1){2,}', r'\1', s)
@@ -1024,9 +1034,10 @@ class KhmerValidator:
                         self.words.add(norm_word)
                         if len(norm_word) > self.max_word_len:
                             self.max_word_len = len(norm_word)
-                        # Build prefix set for fast Forward Maximum Matching
-                        for i in range(1, len(norm_word) + 1):
-                            self.prefixes.add(norm_word[:i])
+                        # Build prefix set for compound words (length >= 8)
+                        if len(norm_word) >= 8:
+                            for i in range(5, len(norm_word)):
+                                self.prefixes.add(norm_word[:i])
                             
         # Supplement with standard modern ICT compound terms
         tech_compounds = [
@@ -1049,9 +1060,15 @@ class KhmerValidator:
         for compound in tech_compounds:
             norm = unicodedata.normalize("NFC", compound)
             self.words.add(norm)
-            for i in range(1, len(norm) + 1):
-                self.prefixes.add(norm[:i])
+            if len(norm) >= 8:
+                for i in range(5, len(norm)):
+                    self.prefixes.add(norm[:i])
                 
+        # Add explicit compound prefixes common across line breaks
+        explicit_prefixes = ["កុំព្យូ", "បច្ចេក", "គមនា", "ប្រតិបត្តិ", "អភិបាល", "សហគ្រាស", "កម្មវិ"]
+        for p in explicit_prefixes:
+            self.prefixes.add(unicodedata.normalize("NFC", p))
+
         # Add common typing variants for coeng da/ta and na/na
         coeng_variants = set()
         for w in list(self.words):
@@ -1061,8 +1078,22 @@ class KhmerValidator:
                 coeng_variants.add(w.replace('\u17d2\u178f', '\u17d2\u178a'))
         for cv in coeng_variants:
             self.words.add(cv)
-            for i in range(1, len(cv) + 1):
-                self.prefixes.add(cv[:i])
+
+        # Build tech words set for prioritising compound terms in dynamic repair
+        self.tech_words: Set[str] = set()
+        common_ict_terms = [
+            "ផ្ទុក", "ឧបករណ៍", "កុំព្យូទ័រ", "ប្រព័ន្ធ", "ប្រតិបត្តិការ",
+            "កម្មវិធី", "ទិន្នន័យ", "ឯកសារ", "អង្គចងចាំ", "កណ្ដុរ", "ក្តារចុច",
+            "អេក្រង់", "ព័ត៌មាន", "អ៊ីនធឺណិត", "សេវា", "ទូរស័ព្ទ", "រឹង", "ទន់"
+        ]
+        for term in common_ict_terms:
+            self.tech_words.add(unicodedata.normalize("NFC", term))
+        for compound in tech_compounds:
+            norm = unicodedata.normalize("NFC", compound)
+            self.tech_words.add(norm)
+            for part in re.findall(r'[\u1780-\u17D3]+', norm):
+                if len(part) >= 2:
+                    self.tech_words.add(part)
 
         # Build first consonant and consonant skeleton index for dynamic spelling & character repair
         self.first_cons_index: Dict[str, List[Tuple[str, str]]] = {}
@@ -1086,7 +1117,7 @@ class KhmerValidator:
         Strict dictionary constraint: only returns candidates that exist in self.words.
         """
         norm = unicodedata.normalize("NFC", token.strip())
-        if not norm or norm in self.words:
+        if not norm or norm in self.words or norm in self.prefixes:
             return norm
 
         # Step 1: Cluster canonicalization
@@ -1144,15 +1175,19 @@ class KhmerValidator:
             pool = self.first_cons_index.get(c1, [])
             target_len = len(cons)
             candidates = []
+            max_diff = 1 if target_len <= 3 else (2 if target_len <= 5 else 3)
             for c_seq, word in pool:
                 if target_len <= 3 and len(c_seq) != target_len:
                     continue
-                elif abs(len(c_seq) - target_len) > 1:
+                elif abs(len(c_seq) - target_len) > max_diff:
                     continue
                 c_ratio = difflib.SequenceMatcher(None, cons, c_seq).ratio()
                 if c_ratio >= 0.70:
                     full_ratio = difflib.SequenceMatcher(None, norm, word).ratio()
                     score = 0.5 * c_ratio + 0.5 * full_ratio
+                    # Tie-breaking bonus for known tech compounds or common words
+                    if hasattr(self, 'tech_words') and word in self.tech_words:
+                        score += 0.02
                     candidates.append((score, word))
             candidates.sort(key=lambda x: x[0], reverse=True)
             if candidates and candidates[0][0] >= 0.75:
@@ -1174,43 +1209,52 @@ class KhmerValidator:
         for part in parts:
             if not part:
                 continue
-            # If part is non-Khmer or already valid word, keep it
-            if not any(0x1780 <= ord(c) <= 0x17FF for c in part) or part in self.words:
+            # If part is non-Khmer or already valid word/prefix, keep it
+            if not any(0x1780 <= ord(c) <= 0x17FF for c in part) or part in self.words or part in self.prefixes:
                 repaired_parts.append(part)
-                continue
-                
-            # If part is a multi-word compound where every word is valid (e.g. ក្រុមហ៊ុនតូច)
-            tokens = self.segment_text(part)
-            if all(t in self.words for t in tokens):
-                repaired_parts.append(part)
-                continue
-                
-            # If part contains any recognized words (e.g. វគ្គ + បណ្តុះ), repair sub-tokens individually
-            if len(tokens) > 1 and any(t in self.words for t in tokens):
-                repaired_tokens = []
-                for t in tokens:
-                    if len(t) >= 2 and t not in self.words:
-                        t_rep = self.auto_repair_token(t)
-                        repaired_tokens.append(t_rep)
-                    else:
-                        repaired_tokens.append(t)
-                repaired_parts.append("".join(repaired_tokens))
                 continue
 
-            # 1. Try repairing the segment as a whole
-            rep = self.auto_repair_token(part)
-            if rep in self.words:
-                repaired_parts.append(rep)
+            # 1. Segment using FMM and cluster-level granularity:
+            # If all tokens are already valid words or prefixes, preserve part intact!
+            tokens = self.segment_text(part)
+            valid_segmentation = all(
+                ((len(t) >= 2 and (t in self.words or t in self.prefixes or self.is_valid_word(t))) or t in ('ឬ', 'ឮ', '៛'))
+                for t in tokens
+            )
+            if valid_segmentation:
+                repaired_parts.append(part)
                 continue
-                
-            # 2. Try safe segmentation and repairing sub-tokens
-            repaired_tokens = []
+
+            # 2. If it is a single unrecognized token or contains orphan single consonants, try auto_repair_token
+            has_orphan_consonant = any(len(t) == 1 and 0x1780 <= ord(t) <= 0x17A2 for t in tokens)
+            if len(tokens) <= 1 or has_orphan_consonant:
+                rep = self.auto_repair_token(part)
+                if rep != part and rep in self.words:
+                    repaired_parts.append(rep)
+                    continue
+
+            # 3. For multi-token parts with unrecognized segments, repair only unrecognized chunks
+            grouped = []
+            curr_unrec = []
             for t in tokens:
-                if len(t) >= 2 and t not in self.words:
-                    t_rep = self.auto_repair_token(t)
-                    repaired_tokens.append(t_rep)
+                is_recognized = (len(t) >= 2 and (t in self.words or t in self.prefixes or self.is_valid_word(t))) or t in ('ឬ', 'ឮ', '៛')
+                if is_recognized:
+                    if curr_unrec:
+                        grouped.append(('unrec', ''.join(curr_unrec)))
+                        curr_unrec = []
+                    grouped.append(('rec', t))
                 else:
-                    repaired_tokens.append(t)
+                    curr_unrec.append(t)
+            if curr_unrec:
+                grouped.append(('unrec', ''.join(curr_unrec)))
+
+            repaired_tokens = []
+            for tag, val in grouped:
+                if tag == 'rec':
+                    repaired_tokens.append(val)
+                else:
+                    t_rep = self.auto_repair_token(val)
+                    repaired_tokens.append(t_rep)
             repaired_parts.append("".join(repaired_tokens))
             
         return "".join(repaired_parts)
@@ -1224,6 +1268,7 @@ class KhmerValidator:
         """
         Segments a Khmer string using Forward Maximum Matching (FMM)
         against the official 56,840-word dictionary.
+        Falls back to atomic Khmer orthographic syllable clusters (KES / UTN #61).
         """
         text = unicodedata.normalize("NFC", text)
         tokens = []
@@ -1240,9 +1285,9 @@ class KhmerValidator:
                 
             # Forward maximum matching
             matched_len = 0
-            # Try from max_word_len down to 1
+            # Try from max_word_len down to 2 (single consonants are not standalone words in running text)
             max_chunk = min(self.max_word_len, n - i)
-            for l in range(max_chunk, 0, -1):
+            for l in range(max_chunk, 1, -1):
                 chunk = text[i:i+l]
                 if chunk in self.words:
                     # A word cannot end mid-cluster: the next char must not be a
@@ -1256,13 +1301,15 @@ class KhmerValidator:
                 tokens.append(text[i:i+matched_len])
                 i += matched_len
             else:
-                # Syllable / cluster fallback: take until next potential prefix
-                j = i + 1
-                while j < n and text[j] in ('\u17D2', '\u17C6', '\u17B6', '\u17B7', '\u17B8', '\u17B9', '\u17BA', '\u17BB', '\u17BC', '\u17BD', '\u17BE', '\u17BF', '\u17C0', '\u17C1', '\u17C2', '\u17C3', '\u17C4', '\u17C5'):
-                    j += 1
-                tokens.append(text[i:j])
-                i = j
-                
+                # Syllable / cluster fallback: consume an entire atomic Khmer orthographic cluster
+                m = KHMER_CLUSTER_RE.match(text, i)
+                if m and m.end() > i:
+                    tokens.append(text[i:m.end()])
+                    i = m.end()
+                else:
+                    tokens.append(text[i])
+                    i += 1
+                    
         return tokens
 
     def compute_validity_score(self, text: str) -> float:

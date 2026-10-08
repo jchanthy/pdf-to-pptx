@@ -88,6 +88,76 @@ def _extract_logical_paragraphs(block: dict) -> List[Tuple[str, float, int, int]
     return result
 
 
+def _merge_adjacent_text_blocks(blocks: List[dict]) -> List[dict]:
+    """
+    Merges adjacent or wrapped text blocks that belong to the same logical paragraph
+    or continuous text box to prevent split words (e.g. 'កុំព្យូ' and 'ទ័រ').
+    """
+    if not blocks or len(blocks) <= 1:
+        return blocks
+
+    import re
+    bullet_pattern = re.compile(r'^\s*(?:[0-9]+[.)]|[១-៩]+[.)]|[-*❖•–—]|[ក-អ][.)])\s*')
+
+    # Sort blocks vertically primarily, horizontally secondarily
+    sorted_blocks = sorted(blocks, key=lambda b: (round(b["bbox"][1] / 10) * 10, b["bbox"][0]))
+    merged: List[dict] = []
+
+    for b in sorted_blocks:
+        b_copy = {
+            "bbox": list(b["bbox"]),
+            "lines": list(b.get("lines", [])),
+            "type": b.get("type", 0)
+        }
+        if not merged:
+            merged.append(b_copy)
+            continue
+
+        prev = merged[-1]
+        prev_lines = prev.get("lines", [])
+        curr_lines = b_copy.get("lines", [])
+
+        if not prev_lines or not curr_lines:
+            merged.append(b_copy)
+            continue
+
+        prev_text = "".join(s.get("text", "") for l in prev_lines for s in l.get("spans", [])).strip()
+        curr_text = "".join(s.get("text", "") for l in curr_lines for s in l.get("spans", [])).strip()
+
+        if not prev_text or not curr_text:
+            merged.append(b_copy)
+            continue
+
+        p_bx0, p_by0, p_bx1, p_by1 = prev["bbox"]
+        c_bx0, c_by0, c_bx1, c_by1 = b_copy["bbox"]
+
+        vertical_gap = c_by0 - p_by1
+        horizontal_diff = abs(c_bx0 - p_bx0)
+
+        last_ch = prev_text[-1]
+        is_terminated = last_ch in ('។', '?', '!', '៖', '…', ':')
+        is_curr_bullet = bool(bullet_pattern.match(curr_text))
+
+        p_spans = [s for l in prev_lines for s in l.get("spans", []) if s.get("text", "").strip()]
+        c_spans = [s for l in curr_lines for s in l.get("spans", []) if s.get("text", "").strip()]
+        p_size = p_spans[-1].get("size", 14) if p_spans else 14
+        c_size = c_spans[0].get("size", 14) if c_spans else 14
+        size_diff = abs(p_size - c_size)
+
+        if (-8 <= vertical_gap <= 25) and (horizontal_diff <= 40) and (not is_terminated) and (not is_curr_bullet) and (size_diff <= 3.5):
+            prev["lines"].extend(curr_lines)
+            prev["bbox"] = [
+                min(p_bx0, c_bx0),
+                min(p_by0, c_by0),
+                max(p_bx1, c_bx1),
+                max(p_by1, c_by1)
+            ]
+        else:
+            merged.append(b_copy)
+
+    return merged
+
+
 KNOWN_MASK_TITLES: Dict[int, str] = {
     25: "កុំព្យូទ័រចាំបាច់",
     36: "ការគ្រប់គ្រងឯកសារ",
@@ -205,7 +275,8 @@ def convert_pdf_to_pptx(
         # 2. Smart Hybrid Text Extraction:
         # Check if page has selectable digital vector text
         page_dict = page.get_text("dict")
-        text_blocks = [b for b in page_dict.get("blocks", []) if b.get("type") == 0]
+        raw_text_blocks = [b for b in page_dict.get("blocks", []) if b.get("type") == 0]
+        text_blocks = _merge_adjacent_text_blocks(raw_text_blocks)
         digital_chars = sum(len(span.get("text", "").strip()) for b in text_blocks for l in b.get("lines", []) for span in l.get("spans", []))
         has_digital_text = (digital_chars >= 8 and not force_ocr)
 
