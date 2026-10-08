@@ -247,3 +247,41 @@ def convert_limon_to_unicode(text: str) -> str:
         
     result_str = "".join(res)
     return result_str
+
+
+MIXED_GLYPH_TABLE: Dict[str, str] = {
+    '3': 'ឧ', 'ñ': 'ក', 'b': 'ព', 'U': 'ប',
+    'F': 'យ', 'f': 'រ', 'R': 'ង', 'P': 'ន',
+    'k': 'ហ', '6': 'ណ', '˘': '័', '˜': '៊', '~': '៊'
+}
+
+def transliterate_mixed_glyphs(text: str) -> str:
+    """
+    Systematically transliterates mixed legacy ASCII glyphs, numbers, and symbols
+    embedded inside Khmer text without requiring legacy font metadata.
+    Handles Limon-3 / ABC keyboard glyph leakage into modern Unicode presentations.
+    """
+    if not text:
+        return ""
+        
+    s = text
+    # Known compounds with mixed glyphs
+    s = re.sub(r'3Uñ[រf]6[\'’]?', 'ឧបករណ៍', s)
+    s = re.sub(r'3Uñ', 'ឧបក', s)
+    s = re.sub(r'6[\'’]', 'ណ៍', s)
+    s = re.sub(r'AA(?=[ក-អ\u17B6-\u17D3])', 'ពព', s)
+    s = re.sub(r'(?:^|(?<=[\s\n]))A(?=[ក-អ\u17B6-\u17D3])', 'ព្យ', s)
+    s = re.sub(r'PមPេះ', 'មេរៀននេះ', s)
+    s = re.sub(r'PិR', 'និង', s)
+    s = re.sub(r'PឹR', 'នឹង', s)
+    s = re.sub(r'ការការbរ', 'ការការពារ', s)
+    s = re.sub(r'ទិP[នS]P[˘័]F', 'ទិន្នន័យ', s)
+    
+    # Single mixed characters inside or adjacent to Khmer characters
+    def _rep_char(m):
+        c = m.group(0)
+        return MIXED_GLYPH_TABLE.get(c, c)
+        
+    s = re.sub(r'(?<=[\u1780-\u17FF])[3ñbUFfRPk6˘˜~]|[3ñbUFfRPk6˘˜~](?=[\u1780-\u17FF])', _rep_char, s)
+    return s
+

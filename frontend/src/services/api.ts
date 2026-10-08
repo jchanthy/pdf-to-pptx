@@ -21,13 +21,14 @@ export async function getFonts(): Promise<FontOption[]> {
 }
 
 export async function uploadAndProcess(
-  pptxFile: File | null,
+  docFile: File | null,
   pdfFile: File | null,
   options: ProcessOptions
 ): Promise<ProcessResponse> {
   const formData = new FormData();
-  if (pptxFile) {
-    formData.append('pptx_file', pptxFile);
+  if (docFile) {
+    formData.append('file', docFile);
+    formData.append('pptx_file', docFile);
   }
   if (pdfFile) {
     formData.append('pdf_file', pdfFile);

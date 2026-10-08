@@ -11,6 +11,46 @@ from typing import Dict, List, Tuple
 # Direct dictionary of frequent legacy/corrupted tokens to clean Unicode
 KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     # Specifically requested corrections:
+    "កញ្ញា ធី សុហវី": "កញ្ញា ធី សុហ្វី",
+    "កញ្ញា ធីសុហវី": "កញ្ញា ធី សុហ្វី",
+    "កញ្ញាធីសុហវី": "កញ្ញា ធី សុហ្វី",
+    "កញ្ញា ធី សុហ្វី": "កញ្ញា ធី សុហ្វី",
+    "ធី សុហវី": "ធី សុហ្វី",
+    "ធីសុហវី": "ធី សុហ្វី",
+    "សុហវី": "សុហ្វី",
+    "មតើក,ុំពយទ័រ": "តើកុំព្យូទ័រ",
+    "មតើក,ុំAយទ័រ": "តើកុំព្យូទ័រ",
+    "មតើក,ុំពយូទ័រ": "តើកុំព្យូទ័រ",
+    "មតើក,ុំAយូទ័រ": "តើកុំព្យូទ័រ",
+    "មតើកុំពយទ័រ": "តើកុំព្យូទ័រ",
+    "មតើកុំAយទ័រ": "តើកុំព្យូទ័រ",
+    "មតើកុំពយូទ័រ": "តើកុំព្យូទ័រ",
+    "មតើកុំAយូទ័រ": "តើកុំព្យូទ័រ",
+    "មតើក,ុំព្យូទ័រ": "តើកុំព្យូទ័រ",
+    "មតើកុំព្យូទ័រ": "តើកុំព្យូទ័រ",
+    "មតើក,ុំ": "តើកុំ",
+    "មតើកុំ": "តើកុំ",
+    "ក,ុំពយទ័រ": "កុំព្យូទ័រ",
+    "ក,ុំAយទ័រ": "កុំព្យូទ័រ",
+    "ក,ុំ ពយទ័រ": "កុំព្យូទ័រ",
+    "ក,ុំ Aយទ័រ": "កុំព្យូទ័រ",
+    "កុំពយទ័រ": "កុំព្យូទ័រ",
+    "កុំAយទ័រ": "កុំព្យូទ័រ",
+    "កុំ ពយទ័រ": "កុំព្យូទ័រ",
+    "កុំ Aយទ័រ": "កុំព្យូទ័រ",
+    "ក,ុំពយូទ័រ": "កុំព្យូទ័រ",
+    "ក,ុំAយូទ័រ": "កុំព្យូទ័រ",
+    "កុំAយូទ័រ": "កុំព្យូទ័រ",
+    "កុំ Aយូទ័រ": "កុំព្យូទ័រ",
+    "ក,ុំ": "កុំ",
+    "Aយទ័រ": "ព្យូទ័រ",
+    "Aយទរ័": "ព្យូទ័រ",
+    "Aយូទ័រ": "ព្យូទ័រ",
+    "Aយូទរ័": "ព្យូទ័រ",
+    "ពយទ័រ": "ព្យូទ័រ",
+    "ពយទរ័": "ព្យូទ័រ",
+    "ពយូទ័រ": "ព្យូទ័រ",
+    "ពយូទរ័": "ព្យូទ័រ",
     "េតីីនធឺណិ ត": "អ៊ីនធឺណិត",
     "េតីីនធឺណិត": "អ៊ីនធឺណិត",
     "េតីនធឺណិត": "អ៊ីនធឺណិត",
@@ -1423,6 +1463,62 @@ HEURISTIC_RULES: List[Tuple[re.Pattern, str, str]] = [
         '\u17C5',
         "Clean colliding vowels ៃ and ៅ"
     ),
+    # 18. Fix variations of កុំព្យូទ័រ and ព្យូទ័រ:
+    (
+        re.compile(r'មតើ\s*ក[\s,]*[ុំ]+\s*[Aព]យ[ូ]*ទ[័រ័]+'),
+        'តើកុំព្យូទ័រ',
+        "Fix មតើក,ុំពយទ័រ to តើកុំព្យូទ័រ"
+    ),
+    (
+        re.compile(r'មតើ\s*ក[\s,]*[ុំ]+'),
+        'តើកុំ',
+        "Fix មតើក,ុំ to តើកុំ"
+    ),
+    (
+        re.compile(r'ក[\s,]*[ុំ]+\s*[Aព]យ[ូ]*ទ[័រ័]+'),
+        'កុំព្យូទ័រ',
+        "Fix កុំពយទ័រ / កុំAយទ័រ to កុំព្យូទ័រ"
+    ),
+    (
+        re.compile(r'ក[\s,]*[ុំ]+\s*A\s*យ[ូ]*ទ[័រ័]+'),
+        'កុំព្យូទ័រ',
+        "Fix កុំ Aយទ័រ to កុំព្យូទ័រ"
+    ),
+    (
+        re.compile(r'ក,\s*ុំ'),
+        'កុំ',
+        "Fix ក,ុំ to កុំ"
+    ),
+    (
+        re.compile(r'(?<![ក-អ])Aយ[ូ]*ទ[័រ័]+'),
+        'ព្យូទ័រ',
+        "Fix Aយទ័រ to ព្យូទ័រ"
+    ),
+    (
+        re.compile(r'(?<![ក-អ])ពយ[ូ]*ទ[័រ័]+'),
+        'ព្យូទ័រ',
+        "Fix ពយទ័រ to ព្យូទ័រ"
+    ),
+    (
+        re.compile(r'មតើ(?=[ក-អ\s]|$)'),
+        'តើ',
+        "Fix មតើ to តើ"
+    ),
+    (
+        re.compile(r'កញ្ញា\s*ធី\s*សុហ[វ្វ]ី'),
+        'កញ្ញា ធី សុហ្វី',
+        "Fix កញ្ញា ធី សុហវី to កញ្ញា ធី សុហ្វី"
+    ),
+    (
+        re.compile(r'ធី\s*សុហ[វ្វ]ី'),
+        'ធី សុហ្វី',
+        "Fix ធី សុហវី to ធី សុហ្វី"
+    ),
+    (
+        re.compile(r'សុហវី'),
+        'សុហ្វី',
+        "Fix សុហវី to សុហ្វី"
+    ),
 ]
 
 
@@ -1463,6 +1559,8 @@ def clean_khmer_unicode(text: str) -> str:
     text = text.replace('\u200b', '')
     # Strip literal dotted circle character
     text = text.replace('\u25cc', '')
+    # Clean rogue commas or spaces between consonants and dependent vowels/diacritics (e.g. ក,ុំ -> កុំ)
+    text = re.sub(r'([\u1780-\u17A2]),\s*([\u17B6-\u17D3])', r'\1\2', text)
     # Unicode NFC normalization
     text = unicodedata.normalize('NFC', text)
     return text
@@ -1571,12 +1669,25 @@ def extract_word_level_differences(orig: str, fixed: str) -> List[Tuple[str, str
 
     s = difflib.SequenceMatcher(None, t_orig, t_fixed)
     replacements = []
+    # Khmer dependent vowels and diacritics (\u17B6 to \u17D3, plus Coeng \u17D2)
+    # These can never stand alone as a word replacement.
+    is_orphan_khmer_sign = lambda s: bool(s and all(0x17B6 <= ord(c) <= 0x17D3 for c in s.strip()))
+
     for tag, i1, i2, j1, j2 in s.get_opcodes():
         if tag in ('replace', 'delete', 'insert'):
             o_sub = ''.join(t_orig[i1:i2]).strip()
             f_sub = ''.join(t_fixed[j1:j2]).strip()
             if o_sub and f_sub and o_sub != f_sub:
-                replacements.append((o_sub, f_sub))
+                # Do not emit lone dependent vowels/subscripts that orphan characters
+                if is_orphan_khmer_sign(o_sub) or is_orphan_khmer_sign(f_sub):
+                    # Expand to include preceding token if available
+                    if i1 > 0 and j1 > 0:
+                        o_sub = ''.join(t_orig[i1-1:i2]).strip()
+                        f_sub = ''.join(t_fixed[j1-1:j2]).strip()
+                    else:
+                        continue
+                if o_sub != f_sub:
+                    replacements.append((o_sub, f_sub))
     return replacements
 
 

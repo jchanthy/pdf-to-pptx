@@ -20,6 +20,7 @@ interface ReviewTableProps {
   onReplacementsChange: (updated: ReplacementItem[]) => void;
   language: Language;
   targetFont: string;
+  initialSlideFilter?: number | null;
 }
 
 export const ReviewTable: React.FC<ReviewTableProps> = ({
@@ -27,10 +28,15 @@ export const ReviewTable: React.FC<ReviewTableProps> = ({
   onReplacementsChange,
   language,
   targetFont,
+  initialSlideFilter,
 }) => {
   const t = translations[language];
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(
+    initialSlideFilter !== undefined && initialSlideFilter !== null
+      ? `slide ${initialSlideFilter + 1}`
+      : ''
+  );
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -164,18 +170,18 @@ export const ReviewTable: React.FC<ReviewTableProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="w-full h-full flex flex-col min-h-0 space-y-2">
       {/* Table Toolbar */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="shrink-0 bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-2">
         {/* Search Input */}
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t.table_search_placeholder}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-khmer"
+            className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-khmer"
           />
         </div>
 
@@ -313,11 +319,11 @@ export const ReviewTable: React.FC<ReviewTableProps> = ({
       )}
 
       {/* Table Content */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="flex-1 min-h-0 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-auto">
           <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-600 font-khmer">
+            <thead className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 shadow-2xs">
+              <tr className="text-xs font-bold text-slate-600 font-khmer">
                 <th className="py-3 px-4 w-20">{t.table_col_slide}</th>
                 <th className="py-3 px-4">{t.table_col_original}</th>
                 <th className="py-3 px-4">{t.table_col_replacement}</th>

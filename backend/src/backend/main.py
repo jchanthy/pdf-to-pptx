@@ -12,6 +12,7 @@ from typing import Dict, List, Optional
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+import docx
 from pptx import Presentation
 
 from .models import (
@@ -31,6 +32,10 @@ from .engine.pptx_processor import (
     RECOMMENDED_KHMER_FONTS,
     apply_replacements_and_fonts,
     extract_presentation_runs,
+)
+from .engine.docx_processor import (
+    extract_docx_sections_or_pages,
+    apply_docx_replacements_and_fonts,
 )
 from .samples.sample_generator import generate_sample_files
 
@@ -291,30 +296,45 @@ def _process_presentation_internal(
 
 @app.post("/api/upload", response_model=ProcessResponse)
 async def upload_and_process(
-    pptx_file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(None),
+    pptx_file: Optional[UploadFile] = File(None),
     pdf_file: Optional[UploadFile] = File(None),
     target_font: str = Form("Khmer OS Battambang"),
     mode: str = Form("auto"),
     gemini_api_key: Optional[str] = Form(None)
 ):
     """
-    Accepts a PowerPoint (.pptx) presentation.
-    Analyzes all slide text, performs Khmer spelling checking & dictionary-based restoration,
-    and returns detected misspellings, corrections, and slide comparisons.
+    Accepts a PowerPoint (.pptx), Word (.docx), or PDF (.pdf) file.
+    - If PDF: performs Khmer OCR and spelling check to convert into an editable PowerPoint (.pptx).
+    - If PPTX/DOCX: analyzes all text, performs Khmer spelling check & dictionary-based restoration.
     """
-    if not pptx_file or not pptx_file.filename:
-        raise HTTPException(status_code=400, detail="Please upload a PowerPoint (.pptx) presentation file.")
+    upload_doc = file or pptx_file
+    if not upload_doc or not upload_doc.filename:
+        if pdf_file and pdf_file.filename:
+            upload_doc = pdf_file
+            pdf_file = None
+        else:
+            raise HTTPException(status_code=400, detail="Please upload a PowerPoint (.pptx), Word (.docx), or PDF (.pdf) file.")
 
-    if not pptx_file.filename.lower().endswith(".pptx"):
-        raise HTTPException(status_code=400, detail="Only PowerPoint (.pptx) files are supported. Please upload a .pptx file.")
+    fname_lower = upload_doc.filename.lower()
+    if not (fname_lower.endswith(".pptx") or fname_lower.endswith(".docx") or fname_lower.endswith(".pdf")):
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported format. Please upload a PowerPoint (.pptx), Word (.docx), or PDF (.pdf) document."
+        )
+
+    is_docx = fname_lower.endswith(".docx")
+    is_pdf = fname_lower.endswith(".pdf")
+    doc_type = "docx" if is_docx else ("pdf" if is_pdf else "pptx")
 
     session_id = str(uuid.uuid4())
     session_dir = os.path.join(BASE_TEMP_DIR, session_id)
     os.makedirs(session_dir, exist_ok=True)
 
-    pptx_save_path = os.path.join(session_dir, "input.pptx")
-    with open(pptx_save_path, "wb") as f:
-        content = await pptx_file.read()
+    saved_doc_name = "input.docx" if is_docx else ("input.pdf" if is_pdf else "input.pptx")
+    doc_save_path = os.path.join(session_dir, saved_doc_name)
+    with open(doc_save_path, "wb") as f:
+        content = await upload_doc.read()
         f.write(content)
 
     pdf_save_path = None
@@ -325,28 +345,71 @@ async def upload_and_process(
             f.write(pdf_content)
 
     session_registry[session_id] = {
-        "pptx_path": pptx_save_path,
-        "pdf_path": pdf_save_path,
-        "original_filename": pptx_file.filename,
+        "doc_path": doc_save_path,
+        "pptx_path": doc_save_path if not (is_docx or is_pdf) else None,
+        "docx_path": doc_save_path if is_docx else None,
+        "pdf_path": doc_save_path if is_pdf else pdf_save_path,
+        "original_filename": upload_doc.filename,
         "target_font": target_font,
         "mode": mode,
         "gemini_api_key": gemini_api_key,
-        "is_pdf_direct": False
+        "document_type": doc_type
     }
 
     try:
-        response = _process_presentation_internal(
-            session_id=session_id,
-            pptx_path=pptx_save_path,
-            pdf_path=pdf_save_path,
-            mode=mode,
-            target_font=target_font,
-            gemini_api_key=gemini_api_key
-        )
-        return response
+        if is_pdf:
+            output_pptx_path = os.path.join(session_dir, "converted_presentation.pptx")
+            converted_path, slides_diff, all_replacements = convert_pdf_to_pptx(
+                pdf_path=doc_save_path,
+                output_pptx_path=output_pptx_path,
+                temp_dir=session_dir,
+                target_font=target_font
+            )
+            session_registry[session_id]["pptx_path"] = converted_path
+            return ProcessResponse(
+                session_id=session_id,
+                total_slides=len(slides_diff),
+                total_corrupted_found=len(all_replacements),
+                slides=slides_diff,
+                all_replacements=all_replacements,
+                target_font=target_font,
+                has_pdf_reference=True,
+                mode=mode,
+                document_type="pdf",
+                filename=upload_doc.filename
+            )
+        elif is_docx:
+            slides_diff, all_replacements = extract_docx_sections_or_pages(
+                docx_path=doc_save_path,
+                target_font=target_font
+            )
+            return ProcessResponse(
+                session_id=session_id,
+                total_slides=len(slides_diff),
+                total_corrupted_found=len(all_replacements),
+                slides=slides_diff,
+                all_replacements=all_replacements,
+                target_font=target_font,
+                has_pdf_reference=False,
+                mode=mode,
+                document_type="docx",
+                filename=upload_doc.filename
+            )
+        else:
+            response = _process_presentation_internal(
+                session_id=session_id,
+                pptx_path=doc_save_path,
+                pdf_path=pdf_save_path,
+                mode=mode,
+                target_font=target_font,
+                gemini_api_key=gemini_api_key
+            )
+            response.document_type = "pptx"
+            response.filename = upload_doc.filename
+            return response
     except Exception as e:
-        logger.exception("Error processing presentation")
-        raise HTTPException(status_code=500, detail=f"Failed to process presentation: {str(e)}")
+        logger.exception("Error processing document")
+        raise HTTPException(status_code=500, detail=f"Failed to process document: {str(e)}")
 
 
 @app.get("/api/sample", response_model=ProcessResponse)
@@ -362,12 +425,15 @@ def load_sample():
     pptx_path, pdf_path = generate_sample_files(session_dir)
 
     session_registry[session_id] = {
+        "doc_path": pptx_path,
         "pptx_path": pptx_path,
+        "docx_path": None,
         "pdf_path": pdf_path,
         "original_filename": "sample_khmer_presentation.pptx",
         "target_font": "Khmer OS Battambang",
         "mode": "auto",
-        "gemini_api_key": None
+        "gemini_api_key": None,
+        "document_type": "pptx"
     }
 
     response = _process_presentation_internal(
@@ -377,22 +443,24 @@ def load_sample():
         mode="auto",
         target_font="Khmer OS Battambang"
     )
+    response.document_type = "pptx"
+    response.filename = "sample_khmer_presentation.pptx"
     return response
 
 
 @app.post("/api/apply-and-download")
 def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundTasks):
     """
-    Applies accepted replacements to the PPTX file, sets target font,
-    and returns the fixed .pptx file as a download stream.
+    Applies accepted replacements to the PPTX or DOCX file, sets target font,
+    and returns the fixed file as a download stream.
     """
     session_id = payload.session_id
     if session_id not in session_registry:
         raise HTTPException(status_code=404, detail="Session expired or not found. Please upload again.")
 
     meta = session_registry[session_id]
-    original_pptx_path = meta["pptx_path"]
     original_filename = meta["original_filename"]
+    doc_type = meta.get("document_type", "pptx")
     
     # Filter to only accepted or modified replacements
     valid_replacements = [
@@ -402,27 +470,57 @@ def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundT
 
     target_font = payload.target_font or meta.get("target_font", "Khmer OS Battambang")
 
-    # Load and update PPTX
     try:
-        prs = Presentation(original_pptx_path)
-        runs_updated = apply_replacements_and_fonts(prs, valid_replacements, target_font=target_font)
-        logger.info(f"Session {session_id}: applied fixes across {runs_updated} text runs.")
+        base_name, ext = os.path.splitext(original_filename)
+        fixed_filename = f"{base_name}_fixed{ext}"
+        output_path = os.path.join(BASE_TEMP_DIR, session_id, fixed_filename)
 
-        fixed_filename = f"{os.path.splitext(original_filename)[0]}_fixed.pptx"
-        output_pptx_path = os.path.join(BASE_TEMP_DIR, session_id, fixed_filename)
-        prs.save(output_pptx_path)
+        if doc_type == "pdf":
+            converted_filename = f"{base_name}.pptx"
+            output_pptx_path = meta.get("pptx_path")
+            if not output_pptx_path or not os.path.exists(output_pptx_path):
+                raise HTTPException(status_code=404, detail="Converted presentation not found.")
+            if valid_replacements:
+                prs = Presentation(output_pptx_path)
+                runs_updated = apply_replacements_and_fonts(prs, valid_replacements, target_font=target_font)
+                logger.info(f"Session {session_id}: applied fixes across {runs_updated} PPTX text runs from OCR.")
+                fixed_pptx_path = os.path.join(BASE_TEMP_DIR, session_id, f"{base_name}_restored.pptx")
+                prs.save(fixed_pptx_path)
+                output_pptx_path = fixed_pptx_path
+                converted_filename = f"{base_name}_restored.pptx"
 
-        # Schedule cleanup after 15 minutes
-        # background_tasks.add_task(...)
+            return FileResponse(
+                output_pptx_path,
+                filename=converted_filename,
+                media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            )
+        elif doc_type == "docx" or meta.get("docx_path"):
+            docx_path = meta.get("docx_path") or meta["doc_path"]
+            doc = docx.Document(docx_path)
+            paragraphs_updated = apply_docx_replacements_and_fonts(
+                doc=doc,
+                replacements=valid_replacements,
+                target_font=target_font
+            )
+            logger.info(f"Session {session_id}: applied fixes across {paragraphs_updated} DOCX paragraphs.")
+            doc.save(output_path)
+            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        else:
+            original_pptx_path = meta.get("pptx_path") or meta["doc_path"]
+            prs = Presentation(original_pptx_path)
+            runs_updated = apply_replacements_and_fonts(prs, valid_replacements, target_font=target_font)
+            logger.info(f"Session {session_id}: applied fixes across {runs_updated} PPTX text runs.")
+            prs.save(output_path)
+            media_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 
         return FileResponse(
-            output_pptx_path,
+            output_path,
             filename=fixed_filename,
-            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            media_type=media_type
         )
     except Exception as e:
-        logger.exception("Failed to apply fixes and build PPTX")
-        raise HTTPException(status_code=500, detail=f"Failed to generate fixed presentation: {str(e)}")
+        logger.exception("Failed to apply fixes and build document")
+        raise HTTPException(status_code=500, detail=f"Failed to generate fixed document: {str(e)}")
 
 
 @app.delete("/api/cleanup/{session_id}")

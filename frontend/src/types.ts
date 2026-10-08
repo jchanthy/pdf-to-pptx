@@ -11,7 +11,7 @@ export interface ReplacementItem {
   original: string;
   replacement: string;
   confidence: number;
-  source: 'dictionary' | 'heuristic' | 'limon_translit' | 'pdf_alignment' | 'gemini_ai' | 'user_edit';
+  source: 'dictionary' | 'heuristic' | 'limon_translit' | 'pdf_alignment' | 'gemini_ai' | 'user_edit' | 'khmer_ocr_restoration' | 'pdf_direct_restoration' | string;
   status: 'accepted' | 'rejected' | 'modified';
   explanation?: string;
   context?: string;
@@ -37,6 +37,8 @@ export interface ProcessResponse {
   target_font: string;
   has_pdf_reference: boolean;
   mode: string;
+  document_type?: 'pptx' | 'docx' | 'pdf';
+  filename?: string;
 }
 
 export interface FontOption {

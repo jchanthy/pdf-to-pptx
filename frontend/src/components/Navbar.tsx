@@ -5,37 +5,34 @@ import { translations } from '../i18n/translations';
 interface NavbarProps {
   language: Language;
   onLanguageToggle: () => void;
+  onLogoClick?: () => void;
   isLoading?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   language,
   onLanguageToggle,
+  onLogoClick,
 }) => {
   const t = translations[language];
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-        {/* Brand */}
-        <div className="flex items-center space-x-3.5">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-100 ring-2 ring-indigo-50">
-            <FileText className="w-6 h-6 stroke-[2.2]" />
+    <header className="shrink-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      <div className="w-full px-4 sm:px-6 h-12 flex items-center justify-between">
+        {/* Brand / Logo */}
+        <button
+          onClick={onLogoClick}
+          type="button"
+          className="flex items-center space-x-2 text-left cursor-pointer group focus:outline-hidden transition active:scale-98 select-none"
+          title={language === 'km' ? 'ត្រឡប់ទៅទំព័រដើម' : 'Go to Home'}
+        >
+          <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs group-hover:bg-indigo-700 transition">
+            <FileText className="w-3.5 h-3.5 stroke-[2.2]" />
           </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-800 bg-clip-text text-transparent tracking-tight">
-                {t.app_title}
-              </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
-                v1.0
-              </span>
-            </div>
-            <p className="text-xs font-medium text-slate-500 hidden sm:block">
-              {t.app_subtitle}
-            </p>
-          </div>
-        </div>
+          <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight group-hover:text-indigo-600 transition">
+            {t.app_title}
+          </span>
+        </button>
 
         {/* Right Actions */}
         <div className="flex items-center space-x-3">

@@ -41,6 +41,8 @@ class ProcessResponse(BaseModel):
     target_font: str
     has_pdf_reference: bool
     mode: str
+    document_type: str = "pptx"  # "pptx" or "docx"
+    filename: Optional[str] = None
 
 
 class ApplyFixesRequest(BaseModel):

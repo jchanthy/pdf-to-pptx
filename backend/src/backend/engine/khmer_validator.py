@@ -33,6 +33,20 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'\bU(?=[\u1780-\u17FF])'), 'ប'),
     (re.compile(r'\bñ(?=[\u1780-\u17FF])'), 'ក'),
     (re.compile(r'(?<=[\u1780-\u17FF])F(?![a-zA-Z0-9])'), 'យ'),
+    # Specific user-reported corrupted words & phrases
+    (re.compile(r'មានៃៅ'), 'មាននៅ'),
+    (re.compile(r'ទេៀតព្យូទ័រ'), 'ទៀតកុំព្យូទ័រ'),
+    (re.compile(r'ទេៀត'), 'ទៀត'),
+    (re.compile(r'ប្កុម'), 'ក្រុម'),
+    (re.compile(r'អ្ផ្ទុកុក'), 'ផ្ទុក'),
+    (re.compile(r'ប្តឹម្ត្រូវ'), 'ត្រឹមត្រូវ'),
+    (re.compile(r'ន្នោះ'), 'នោះ'),
+    (re.compile(r'ចគ្ស្គាល់'), 'ស្គាល់'),
+    (re.compile(r'បូ៊េតតងថយ'), 'ប៊ូតុងថយ'),
+    (re.compile(r'គន្លឹះាុះ'), 'គន្លឹះ'),
+    (re.compile(r'បចងីកត'), 'បង្កើត'),
+    (re.compile(r'តូរ\s*ឈ្មោះ'), 'ប្តូរឈ្មោះ'),
+    (re.compile(r'បសិន\s*ចបី'), 'ប្រសិនបើ'),
     # Specifically identified corrupted phrases and words
     (re.compile(r'េ\s*ត\s*ី\s*ី?\s*ន\s*ធ\s*ឺ\s*ណ\s*ិ\s*ត|េតី[ី\s]*នធឺណិ?\s*ត'), 'អ៊ីនធឺណិត'),
     (re.compile(r'A\s*ី\s*េតី[ី\s]*នធឺណិ?\s*ត'), 'ពីអ៊ីនធឺណិត'),
@@ -188,8 +202,8 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'ោជធានី'), 'រាជធានី'),
     (re.compile(r'ភនំមពញ'), 'ភ្នំពេញ'),
     (re.compile(r'មលខទូ\s*សពទ'), 'លេខទូរស័ព្ទ'),
-    (re.compile(r'ជបប្?េីស'), 'ជម្រើស'),
-    (re.compile(r'បប្េុង'), 'បម្រុង'),
+    (re.compile(r'ជបប្?[េើ]+ស'), 'ជម្រើស'),
+    (re.compile(r'បប្[េើ]+ុង'), 'បម្រុង'),
     (re.compile(r'ព្ព្កស'), 'ពពក'),
     (re.compile(r'បជៀសវាង'), 'ជៀសវាង'),
     (re.compile(r'ហានិ្័យ'), 'ហានិភ័យ'),
@@ -298,6 +312,16 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'មោលបំណង'), 'គោលបំណង'),
     (re.compile(r'មេម[\s\u17D2]*[fៀ]+ន'), 'មេរៀន'),
     (re.compile(r'មៅរនុង'), 'នៅក្នុង'),
+    (re.compile(r'មតើ\s*ក[\s,]*[ុំ]+\s*[Aព]យ[ូ]*ទ[័រ័]+'), 'តើកុំព្យូទ័រ'),
+    (re.compile(r'មតើ\s*ក[\s,]*[ុំ]+'), 'តើកុំ'),
+    (re.compile(r'ក[\s,]*[ុំ]+\s*[Aព]យ[ូ]*ទ[័រ័]+'), 'កុំព្យូទ័រ'),
+    (re.compile(r'ក[\s,]*[ុំ]+\s*A\s*យ[ូ]*ទ[័រ័]+'), 'កុំព្យូទ័រ'),
+    (re.compile(r'ក,\s*ុំ'), 'កុំ'),
+    (re.compile(r'(?<![ក-អ])Aយ[ូ]*ទ[័រ័]+'), 'ព្យូទ័រ'),
+    (re.compile(r'(?<![ក-អ])ពយ[ូ]*ទ[័រ័]+'), 'ព្យូទ័រ'),
+    (re.compile(r'កញ្ញា\s*ធី\s*សុហ[វ្វ]ី'), 'កញ្ញា ធី សុហ្វី'),
+    (re.compile(r'ធី\s*សុហ[វ្វ]ី'), 'ធី សុហ្វី'),
+    (re.compile(r'សុហវី'), 'សុហ្វី'),
     (re.compile(r'កំតAយូទ័រ|កំត\s*Aយូទ័រ'), 'កុំព្យូទ័រ'),
     (re.compile(r'កំតA|កំត\s*A'), 'កុំព្យូ'),
     (re.compile(r'កុំព្យូយូ'), 'កុំព្យូ'),
@@ -861,7 +885,107 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
 ]
 
 
+def canonicalize_clusters(text: str) -> str:
+    """
+    Normalizes Khmer Unicode clusters to standard canonical orthography:
+    1. Fixes decomposed / inverted vowels:
+       - េ + ី (U+17C1 + U+17B8) or ី + េ -> ើ (U+17BE)
+       - េ + ា (U+17C1 + U+17B6) or ា + េ -> ោ (U+17C4)
+       - ំ + ា (U+17C6 + U+17B6) -> ាំ (U+17B6 + U+17C6)
+       - េ + ៅ (U+17C1 + U+17C5) -> ៅ (U+17C5)
+    2. Collapses consecutive duplicate vowels, Coengs, and signs.
+    3. Reorders consonant shifters (Triisap U+17CA, Muusikatoan U+17C9) before dependent vowels.
+    4. Removes stray dotted circles (U+25CC).
+    5. Strips stray leading pre-vowels on clusters that already have a dependent vowel.
+    6. Normalizes trailing Coeng with no subscript consonant.
+    """
+    if not text:
+        return ""
+    s = unicodedata.normalize("NFC", text)
+    # Decomposed / inverted vowels
+    s = s.replace('\u17C1\u17B8', '\u17BE').replace('\u17B8\u17C1', '\u17BE')
+    s = s.replace('\u17C1\u17B6', '\u17C4').replace('\u17B6\u17C1', '\u17C4')
+    s = s.replace('\u17C6\u17B6', '\u17B6\u17C6')
+    s = s.replace('\u17C1\u17C5', '\u17C5')
+    # Collapse duplicates
+    s = re.sub(r'(\u17B6){2,}', r'\1', s)
+    s = re.sub(r'(\u17C1){2,}', r'\1', s)
+    s = re.sub(r'(\u17D2){2,}', r'\1', s)
+    s = re.sub(r'(\u17C6){2,}', r'\1', s)
+    s = re.sub(r'(\u17C7){2,}', r'\1', s)
+    s = re.sub(r'(\u17C8){2,}', r'\1', s)
+    s = re.sub(r'(\u17D0){2,}', r'\1', s)
+    # Shifter before dependent vowel
+    s = re.sub(r'([\u1780-\u17A2](?:\u17D2[\u1780-\u17A2])*)([\u17B6-\u17C5])([\u17C9\u17CA])', r'\1\3\2', s)
+    # Stray dotted circles
+    s = s.replace('\u25CC', '')
+    # Stray leading pre-vowel on cluster with existing vowel
+    s = re.sub(r'(?:^|(?<=[\s\n]))([\u17C1\u17C2\u17C3\u17C4\u17C5])([\u1780-\u17A2](?:\u17D2[\u1780-\u17A2])*)([\u17B6-\u17C5])(.*)', r'\2\3\4', s)
+    # Trailing orphan coeng
+    s = re.sub(r'\u17D2(?=[^\u1780-\u17A2]|$)', '', s)
+    return unicodedata.normalize("NFC", s)
 
+
+SYSTEMATIC_FONT_SHIFTS: List[Tuple[str, str]] = [
+    # Systematic font shifts from Limon, ABC, and OCR
+    (r'^ក្ប', 'ប្រ'),
+    (r'^ប្ក', 'ក្រ'),
+    (r'^ប្ស', 'ស្រ'),
+    (r'^ប្ត', 'ត្រ'),
+    (r'^ចៅ', 'នៅ'),
+    (r'^ចលី', 'លើ'),
+    (r'^ចទៀត', 'ទៀត'),
+    (r'^ចប្ចីន', 'ច្រើន'),
+    (r'^ចប្ជីស', 'ជ្រើស'),
+    (r'^ចដាយ', 'ដោយ'),
+    (r'^ចដី', 'ដើម្បី'),
+    (r'^ចពល', 'ពេល'),
+    (r'^ចប្កា[មម្]', 'ក្រោម'),
+    (r'^លៅ', 'នៅ'),
+    (r'^លលី', 'លើ'),
+    (r'^លតី', 'តើ'),
+    (r'^លព[ល្ល]', 'ពេល'),
+    (r'^លបីក', 'បើក'),
+    (r'^លចញ', 'ចេញ'),
+    (r'^លក្ជី[វស]', 'ជ្រើសរើស'),
+    (r'^លក្បី', 'ប្រើ'),
+    (r'^លប្គ', 'ប្រើ'),
+    (r'^លដីរ', 'ដើរ'),
+    (r'^លដីម', 'ដើម'),
+    (r'^បប្?ប[ីើ]+', 'ប្រើ'),
+    (r'^បប្បីប្បាស់', 'ប្រើប្រាស់'),
+    (r'^បធ[ែវ]ី', 'ធ្វើ'),
+    (r'^ស្ដល', 'ដែល'),
+    (r'^វដល', 'ដែល'),
+    (r'^ស្ផ្នក', 'ផ្នែក'),
+    (r'^គ្នមាន', 'គ្មាន'),
+    (r'^មា៉ា[វ\s]*[តី]+ន', 'ម៉ាស៊ីន'),
+    (r'^មា៉ាវីតន', 'ម៉ាស៊ីន'),
+    (r'^សុវតិថ', 'សុវត្ថិ'),
+    (r'^គូវ', 'គូស'),
+    (r'^ទាច់', 'ទាក់'),
+    (r'^គ្នៃ$', 'គ្នា'),
+    (r'^បូ[˜~]+តតង', 'ប៊ូតុង'),
+    (r'^បី[˜~]+ត', 'ប៊ីត'),
+    (r'^លាៃ', 'លាន'),
+    (r'^ាណ៌$', 'ពណ៌'),
+    (r'^អីែ$', 'អ្វី'),
+    (r'^ចាបលិ៍$', 'កាប'),
+    (r'^អតបទិច$', 'អុបទិក'),
+    (r'^អតថបទ$', 'អត្ថបទ'),
+    (r'^នៃិង$', 'និង'),
+    (r'^អា[ិឡ\u17B7\u17B8\u17D2កតដ]+[ូោ]+និក$', 'អេឡិចត្រូនិច'),
+    (r'^ស្គរ$', 'សារ'),
+    (r'^បនាទត់$', 'បន្ទាត់'),
+]
+
+CONSONANT_PAIRS: List[Tuple[str, str]] = [
+    ('ដ', 'ត'), ('ត', 'ដ'), ('ណ', 'ន'), ('ន', 'ណ'),
+    ('ឡ', 'ល'), ('ល', 'ឡ'), ('ស', 'ខ'), ('ខ', 'ស'),
+    ('គ', 'ក'), ('ក', 'គ'), ('ភ', 'ព'), ('ព', 'ភ'),
+    ('ធ', 'ទ'), ('ទ', 'ធ'), ('ច', 'ជ'), ('ជ', 'ច'),
+    ('អ', 'ស'), ('ស', 'អ')
+]
 
 
 KHMER_EQUIV_TRANS = str.maketrans({
@@ -916,7 +1040,8 @@ class KhmerValidator:
             "សុខភាព", "ព័ត៌មានវិទ្យា", "គោលនយោបាយ", "ភាពងាយរងគ្រោះ",
             "ប៊ីត", "មេហ្គាប៊ីត", "គីឡូប៊ីត", "ជីហ្គាប៊ីត", "តេរ៉ាប៊ីត",
             "បៃ", "មេហ្គាបៃ", "គីឡូបៃ", "ជីហ្គាបៃ", "វើលវ៉ាយវិប",
-            "គន្លឹះ", "យូអេសប៊ី", "មេម៉ូរីកាត", "ហ្គេម", "វីដេអូ"
+            "គន្លឹះ", "យូអេសប៊ី", "មេម៉ូរីកាត", "ហ្គេម", "វីដេអូ",
+            "អេឡិចត្រូនិច", "អេឡិចត្រូនិក", "ខ្សែកាបអុបទិក", "កម្មវិធីព្យាបាទ"
         ]
         for compound in tech_compounds:
             norm = unicodedata.normalize("NFC", compound)
@@ -954,13 +1079,45 @@ class KhmerValidator:
     def auto_repair_token(self, token: str) -> str:
         """
         Dynamically repairs missing or incorrect characters in a word by searching
-        and scoring candidate words from the 56,840-word open-source dictionary.
+        and scoring candidate words from the official dictionary.
+        Strict dictionary constraint: only returns candidates that exist in self.words.
         """
         norm = unicodedata.normalize("NFC", token.strip())
         if not norm or norm in self.words:
             return norm
-            
-        # Check 1: Spurious final coeng (e.g. បណ្ត្ល -> បណ្ដាល)
+
+        # Step 1: Cluster canonicalization
+        c1 = canonicalize_clusters(norm)
+        if c1 in self.words:
+            return c1
+
+        # Step 2: Mixed glyph transliteration
+        try:
+            from .legacy_converter import transliterate_mixed_glyphs
+            c2 = transliterate_mixed_glyphs(norm)
+            c2 = canonicalize_clusters(c2)
+            if c2 in self.words:
+                return c2
+        except Exception:
+            pass
+
+        # Step 3: Systematic font shift rules
+        for pat, repl in SYSTEMATIC_FONT_SHIFTS:
+            shifted = re.sub(pat, repl, norm)
+            if shifted != norm:
+                s_norm = canonicalize_clusters(shifted)
+                if s_norm in self.words:
+                    return s_norm
+
+        # Step 4: Retroflex/dental consonant pairs check
+        for a, b in CONSONANT_PAIRS:
+            if a in norm:
+                v = norm.replace(a, b)
+                v_norm = canonicalize_clusters(v)
+                if v_norm in self.words:
+                    return v_norm
+
+        # Step 5: Spurious final coeng (e.g. បណ្ត្ល -> បណ្ដាល)
         cand1 = re.sub(r'\u17D2([ក-អ])$', r'ា\1', norm)
         cand2 = re.sub(r'\u17D2([ក-អ])$', r'\1', norm)
         for c in [cand1, cand2]:
@@ -971,13 +1128,13 @@ class KhmerValidator:
             if c_swap in self.words:
                 return c_swap
                 
-        # Check 2: Try coeng da vs coeng ta swap
+        # Step 6: Try coeng da vs coeng ta swap
         if '\u178f' in norm or '\u178a' in norm:
             swapped = norm.replace('\u178f', '\u178a') if '\u178f' in norm else norm.replace('\u178a', '\u178f')
             if swapped in self.words:
                 return swapped
                 
-        # Check 3: Consonant signature fuzzy match in 56,840 dictionary
+        # Step 7: Consonant signature fuzzy match in dictionary
         cons = self.get_consonants(norm)
         if cons:
             c1 = cons[0]
@@ -995,7 +1152,7 @@ class KhmerValidator:
                     score = 0.5 * c_ratio + 0.5 * full_ratio
                     candidates.append((score, word))
             candidates.sort(key=lambda x: x[0], reverse=True)
-            if candidates and candidates[0][0] >= 0.72:
+            if candidates and candidates[0][0] >= 0.75:
                 return candidates[0][1]
                 
         return norm
@@ -1176,9 +1333,28 @@ class KhmerValidator:
         orphan_signs = any(
             t and all(0x17B6 <= ord(c) <= 0x17D3 for c in t) for t in tokens
         )
-        if khmer_tokens and not orphan_signs and all(t in self.words for t in khmer_tokens):
+        single_consonant_isolated = any(
+            len(t) == 1 and 0x1780 <= ord(t) <= 0x17A2 for t in khmer_tokens
+        )
+        if (
+            khmer_tokens
+            and not orphan_signs
+            and not single_consonant_isolated
+            and all(t in self.words for t in khmer_tokens)
+        ):
             return current
             
+        # Step 1: Canonicalize Unicode syllable clusters (decomposed vowels, shifters, orphan pre-vowels)
+        current = canonicalize_clusters(current)
+
+        # Step 2: Systematically transliterate mixed legacy glyphs (3Uñ, P, R, ñ, b, U, F, f, 6', etc.)
+        try:
+            from .legacy_converter import transliterate_mixed_glyphs
+            current = transliterate_mixed_glyphs(current)
+            current = canonicalize_clusters(current)
+        except Exception:
+            pass
+
         # Apply transformation patterns, never cutting through already-valid words
         for pattern, repl in LEGACY_GLYPH_TRANSFORMS:
             current = self.protected_sub(pattern, repl, current)

@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   FileText,
-  Sparkles,
   Layers,
   ArrowRight,
   RotateCcw,
-  CheckCircle2,
   Table as TableIcon,
   Columns,
   Download,
@@ -43,10 +41,50 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
   const [replacements, setReplacements] = useState<ReplacementItem[]>(data.all_replacements);
   const [tableFilterSlide, setTableFilterSlide] = useState<number | null>(null);
 
+  // Derive slide-level replacements reactively from replacements state
+  const enrichedSlides = useMemo(() => {
+    const map = new Map<number, ReplacementItem[]>();
+    replacements.forEach((r) => {
+      const list = map.get(r.slide_index) || [];
+      list.push(r);
+      map.set(r.slide_index, list);
+    });
+
+    return slides.map((s) => ({
+      ...s,
+      replacements: map.get(s.slide_index) || [],
+    }));
+  }, [slides, replacements]);
+
   const handleToggleReplacement = (id: string, newStatus: 'accepted' | 'rejected') => {
     const updated = replacements.map((item) => {
       if (item.id === id) {
         return { ...item, status: newStatus };
+      }
+      return item;
+    });
+    setReplacements(updated);
+  };
+
+  const handleBulkSlideStatus = (slideIdx: number, newStatus: 'accepted' | 'rejected') => {
+    const updated = replacements.map((item) => {
+      if (item.slide_index === slideIdx) {
+        return { ...item, status: newStatus };
+      }
+      return item;
+    });
+    setReplacements(updated);
+  };
+
+  const handleEditReplacement = (id: string, newReplacement: string) => {
+    const updated = replacements.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          replacement: newReplacement,
+          status: 'modified' as const,
+          source: 'user_edit' as const,
+        };
       }
       return item;
     });
@@ -96,177 +134,148 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
   ).length;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-16">
-      {/* Top Banner Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Slides Count */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex items-center space-x-3.5">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-400 font-khmer">
-              {t.stats_slides}
-            </p>
-            <p className="text-xl font-extrabold text-slate-900">
-              {data.total_slides}
-            </p>
-          </div>
-        </div>
-
-        {/* Corrupted Detected */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex items-center space-x-3.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-400 font-khmer">
-              {t.stats_corrupted}
-            </p>
-            <p className="text-xl font-extrabold text-amber-600">
-              {data.total_corrupted_found}
-            </p>
-          </div>
-        </div>
-
-        {/* PDF Reference Status */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex items-center space-x-3.5">
+    <div className="w-full h-full flex flex-col min-h-0 space-y-2">
+      {/* Sleek Office App Header Bar */}
+      <div className="shrink-0 bg-white rounded-2xl border border-slate-200 shadow-xs px-3 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+        {/* Left: Document Identity & Quick Stat Badges */}
+        <div className="flex items-center space-x-2.5">
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-              data.has_pdf_reference
-                ? 'bg-teal-50 text-teal-600'
-                : 'bg-slate-100 text-slate-400'
+            className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white shadow-xs shrink-0 ${
+              data.document_type === 'docx'
+                ? 'bg-blue-600'
+                : 'bg-orange-500'
             }`}
           >
-            <FileText className="w-5 h-5" />
+            {data.document_type === 'docx' ? (
+              <FileText className="w-3.5 h-3.5" />
+            ) : (
+              <Layers className="w-3.5 h-3.5" />
+            )}
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-400 font-khmer">
-              {t.stats_pdf}
-            </p>
-            <p className="text-sm font-bold text-slate-800">
-              {data.has_pdf_reference ? 'Active (Aligned)' : 'None (Dictionary Mode)'}
-            </p>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 truncate max-w-[180px] sm:max-w-xs font-khmer">
+                {data.filename || (data.document_type === 'docx' ? 'Document.docx' : 'Presentation.pptx')}
+              </h2>
+              <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                data.document_type === 'docx'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                  : 'bg-orange-50 text-orange-700 border border-orange-200'
+              }`}>
+                {data.document_type === 'docx' ? 'Word' : 'PPTX'}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-khmer">
+              <span>
+                {data.total_slides} {data.document_type === 'docx' ? (language === 'km' ? 'ទំព័រ' : 'pages') : (language === 'km' ? 'ស្លាយ' : 'slides')}
+              </span>
+              <span>•</span>
+              <span className="text-amber-600 font-bold">
+                {data.total_corrupted_found} {language === 'km' ? 'កំហុស' : 'issues'}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Target Font Selector */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex flex-col justify-center">
-          <label className="text-xs font-semibold text-slate-400 font-khmer mb-1">
-            {t.stats_font}
-          </label>
-          <select
-            value={targetFont}
-            onChange={(e) => onTargetFontChange(e.target.value)}
-            className="text-xs font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-          >
-            {fonts.map((f) => (
-              <option key={f.name} value={f.name}>
-                {f.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+        {/* Center / Right: Target Font Selector & View Switcher */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Target Font Quick Picker */}
+          <div className="flex items-center space-x-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs">
+            <span className="text-slate-400 font-medium font-khmer text-[11px]">{t.stats_font}:</span>
+            <select
+              value={targetFont}
+              onChange={(e) => onTargetFontChange(e.target.value)}
+              className="font-bold text-slate-800 bg-transparent focus:outline-hidden cursor-pointer text-xs"
+            >
+              {fonts.map((f) => (
+                <option key={f.name} value={f.name}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {/* View Switcher Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setActiveTab('comparison')}
-            className={`inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition cursor-pointer ${
-              activeTab === 'comparison'
-                ? 'bg-indigo-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <Columns className="w-4 h-4" />
-            <span className="font-khmer">{t.tab_comparison}</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('table')}
-            className={`inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition cursor-pointer ${
-              activeTab === 'table'
-                ? 'bg-indigo-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <TableIcon className="w-4 h-4" />
-            <span className="font-khmer">{t.tab_table}</span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                activeTab === 'table' ? 'bg-indigo-700 text-white' : 'bg-slate-200 text-slate-700'
+          {/* View Tab Buttons */}
+          <div className="inline-flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
+            <button
+              onClick={() => setActiveTab('comparison')}
+              className={`inline-flex items-center space-x-1 px-2 py-1 rounded-md font-bold transition cursor-pointer font-khmer text-xs ${
+                activeTab === 'comparison'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              {acceptedCount}
-            </span>
-          </button>
-        </div>
+              <Columns className="w-3.5 h-3.5" />
+              <span>{t.tab_comparison}</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('table')}
+              className={`inline-flex items-center space-x-1 px-2 py-1 rounded-md font-bold transition cursor-pointer font-khmer text-xs ${
+                activeTab === 'table'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <TableIcon className="w-3.5 h-3.5" />
+              <span>{t.tab_table}</span>
+              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 text-slate-700 font-bold">
+                {acceptedCount}
+              </span>
+            </button>
+          </div>
 
-        <button
-          onClick={onBackToUpload}
-          className="text-xs font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center space-x-1 cursor-pointer font-khmer"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>{t.btn_back_upload}</span>
-        </button>
-      </div>
-
-      {/* Tab Panels */}
-      {activeTab === 'comparison' ? (
-        <SlideComparison
-          slides={slides}
-          language={language}
-          targetFont={targetFont}
-          onUpdateSlideText={handleUpdateSlideText}
-          onToggleReplacementStatus={handleToggleReplacement}
-          onSwitchToTable={handleSwitchToTable}
-        />
-      ) : (
-        <ReviewTable
-          replacements={replacements}
-          onReplacementsChange={setReplacements}
-          language={language}
-          targetFont={targetFont}
-          initialSlideFilter={tableFilterSlide}
-        />
-      )}
-
-      {/* Bottom Sticky Action Bar */}
-      <div className="sticky bottom-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-slate-200 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center space-x-2 text-sm text-slate-600">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>
-            <strong className="text-slate-900">{acceptedCount}</strong> replacements ready to apply to{' '}
-            <strong className="text-slate-900">{data.total_slides}</strong> slides with font{' '}
-            <span className="font-semibold text-indigo-600 underline">{targetFont}</span>.
-          </span>
-        </div>
-
-        <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
+          {/* Proceed to Download in Top Bar */}
           <button
             onClick={() => onProceedToDownload(replacements)}
             disabled={isLoading || acceptedCount === 0}
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-100 transition active:scale-98 disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition active:scale-98 disabled:opacity-50 cursor-pointer font-khmer ml-1"
           >
             {isLoading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                <span>Applying Fixes & Formatting...</span>
-              </>
+              <span>{language === 'km' ? 'កំពុង...' : '...'}</span>
             ) : (
               <>
-                <Download className="w-4 h-4" />
-                <span className="font-khmer">{t.btn_proceed_download}</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
+                <Download className="w-3.5 h-3.5" />
+                <span>{t.btn_proceed_download}</span>
+                <ArrowRight className="w-3 h-3 ml-0.5" />
               </>
             )}
           </button>
+
+          {/* Back to Upload */}
+          <button
+            onClick={onBackToUpload}
+            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg border border-transparent hover:border-slate-200 transition cursor-pointer"
+            title={t.btn_back_upload}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
         </div>
+      </div>
+
+      {/* Main Content Workspace */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        {activeTab === 'comparison' ? (
+          <SlideComparison
+            slides={enrichedSlides}
+            language={language}
+            targetFont={targetFont}
+            documentType={data.document_type || 'pptx'}
+            filename={data.filename}
+            onUpdateSlideText={handleUpdateSlideText}
+            onToggleReplacementStatus={handleToggleReplacement}
+            onBulkSlideStatus={handleBulkSlideStatus}
+            onEditReplacement={handleEditReplacement}
+            onSwitchToTable={handleSwitchToTable}
+          />
+        ) : (
+          <ReviewTable
+            replacements={replacements}
+            onReplacementsChange={setReplacements}
+            language={language}
+            targetFont={targetFont}
+            initialSlideFilter={tableFilterSlide}
+          />
+        )}
       </div>
     </div>
   );

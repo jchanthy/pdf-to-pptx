@@ -31,6 +31,7 @@ export function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [savedReplacements, setSavedReplacements] = useState<ReplacementItem[]>([]);
+  const [resetKey, setResetKey] = useState<number>(0);
 
   const t = translations[language];
 
@@ -53,10 +54,13 @@ export function App() {
     setIsLoading(true);
     setErrorMessage(null);
     try {
+      // 1. Process document and identify all Khmer Unicode & spelling fixes
       const response = await uploadAndProcess(pptxFile, pdfFile, options);
       setProcessResult(response);
       setSavedReplacements(response.all_replacements);
-      setCurrentStep(2);
+
+      // 2. Move to completion screen and wait for user to click the download button
+      setCurrentStep(3);
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || t.alert_error);
@@ -87,11 +91,16 @@ export function App() {
         options.target_font,
         updatedReplacements
       );
-      triggerFileDownload(blob, 'presentation_fixed.pptx');
+      const isDocx = processResult.document_type === 'docx';
+      const ext = isDocx ? '.docx' : '.pptx';
+      const baseName = processResult.filename
+        ? processResult.filename.replace(/\.[^/.]+$/, '')
+        : (isDocx ? 'document' : 'presentation');
+      triggerFileDownload(blob, `${baseName}_fixed${ext}`);
       setCurrentStep(3);
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err.message || 'Failed to generate corrected PPTX');
+      setErrorMessage(err.message || 'Failed to generate corrected file');
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +115,12 @@ export function App() {
         options.target_font,
         savedReplacements
       );
-      triggerFileDownload(blob, 'presentation_fixed.pptx');
+      const isDocx = processResult.document_type === 'docx';
+      const ext = isDocx ? '.docx' : '.pptx';
+      const baseName = processResult.filename
+        ? processResult.filename.replace(/\.[^/.]+$/, '')
+        : (isDocx ? 'document' : 'presentation');
+      triggerFileDownload(blob, `${baseName}_fixed${ext}`);
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || 'Failed to download');
@@ -120,34 +134,37 @@ export function App() {
     setProcessResult(null);
     setSavedReplacements([]);
     setErrorMessage(null);
+    setIsLoading(false);
+    setResetKey((prev) => prev + 1);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-khmer">
+    <div className="h-screen max-h-screen overflow-hidden bg-slate-50 flex flex-col font-khmer">
       {/* Navbar */}
       <Navbar
         language={language}
         onLanguageToggle={handleLanguageToggle}
+        onLogoClick={handleStartOver}
         isLoading={isLoading}
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 min-h-0 w-full mx-auto px-3 sm:px-6 py-2 sm:py-3 max-w-[1600px] flex flex-col overflow-hidden">
         {/* Error Notification */}
         {errorMessage && (
-          <div className="max-w-4xl mx-auto mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start justify-between shadow-xs">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-              <div className="text-sm">
+          <div className="shrink-0 max-w-4xl w-full mx-auto mb-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start justify-between shadow-xs">
+            <div className="flex items-start space-x-2.5">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div className="text-xs">
                 <p className="font-bold">Error</p>
                 <p className="mt-0.5">{errorMessage}</p>
               </div>
             </div>
             <button
               onClick={() => setErrorMessage(null)}
-              className="text-rose-400 hover:text-rose-700 p-1 rounded-lg"
+              className="text-rose-400 hover:text-rose-700 p-0.5 rounded-lg"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
@@ -155,10 +172,8 @@ export function App() {
         {/* Step Views */}
         {currentStep === 1 && (
           <UploadStep
+            key={resetKey}
             language={language}
-            fonts={fonts}
-            options={options}
-            onOptionsChange={setOptions}
             onSubmit={handleUploadSubmit}
             isLoading={isLoading}
           />
@@ -189,20 +204,17 @@ export function App() {
             }
             onDownloadAgain={handleDownloadAgain}
             onStartOver={handleStartOver}
+            onPreviewEdit={() => setCurrentStep(2)}
+            isLoading={isLoading}
           />
         )}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-500 bg-white">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="font-khmer">
-            Khmer DocFixer &bull; PDF-to-PPTX Unicode Restorer &bull; Limon / ABC to Khmer Unicode Engine
-          </p>
-          <p className="text-slate-400">
-            Preserves Office Open XML Geometry, Styling, Tables, and Shapes
-          </p>
-        </div>
+      <footer className="shrink-0 border-t border-slate-200 py-1.5 px-4 text-center text-[11px] text-slate-400 bg-white">
+        <p className="font-khmer">
+          Khmer DocFixer &bull; PowerPoint & Word Khmer Spelling Corrector
+        </p>
       </footer>
     </div>
   );
