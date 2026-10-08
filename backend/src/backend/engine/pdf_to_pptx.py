@@ -238,7 +238,40 @@ def convert_pdf_to_pptx(
         scale_x = page_width / pix_ocr.width
         scale_y = page_height / pix_ocr.height
 
-        # 1. Redact text on background copy to produce a pristine background without ghosting
+        # 1. Extract embedded content images as standalone editable PowerPoint picture shapes
+        embedded_images = []
+        for img_info in page.get_images():
+            xref = img_info[0]
+            base_img = doc.extract_image(xref)
+            if not base_img:
+                continue
+            iw = base_img.get("width", 0)
+            ih = base_img.get("height", 0)
+            # Filter out tiny 1x1 or 2x2 color tiles or heading masks
+            if iw < 8 or ih < 8:
+                continue
+            rects = page.get_image_rects(xref)
+            if not rects:
+                continue
+            
+            # Delete image from background copy so it isn't baked into the canvas
+            try:
+                p_bg.delete_image(xref)
+            except Exception:
+                pass
+            
+            ext = base_img.get("ext", "png")
+            img_filename = f"img_p{page_idx+1}_{xref}.{ext}"
+            img_path = os.path.join(temp_dir, img_filename)
+            if not os.path.exists(img_path):
+                with open(img_path, "wb") as f_img:
+                    f_img.write(base_img["image"])
+                    
+            for r in rects:
+                if r.width >= 5 and r.height >= 5:
+                    embedded_images.append((img_path, r.x0, r.y0, r.width, r.height))
+
+        # 2. Redact text on background copy to produce a pristine background without ghosting
         pad_x, pad_y = 2, 5
         for b in p_bg.get_text("blocks"):
             if b[6] == 0:  # text block
@@ -251,19 +284,22 @@ def convert_pdf_to_pptx(
                 p_bg.add_redact_annot(padded_rect, fill=None)
         p_bg.apply_redactions(images=0)
         
-        # Delete 2x2 masked heading images from background copy so no text is baked into pixels
+        # Delete any remaining 2x2 masked heading images from background copy
         for img_info in list(p_bg.get_images()):
             xref = img_info[0]
             obj = doc_for_bg.xref_object(xref)
             if '/Width 2' in obj and '/Height 2' in obj:
-                p_bg.delete_image(xref)
+                try:
+                    p_bg.delete_image(xref)
+                except Exception:
+                    pass
         
         # Crisp, fast 120 DPI background rendering
         pix = p_bg.get_pixmap(dpi=120)
         bg_image_path = os.path.join(temp_dir, f"bg_slide_{page_idx+1}.png")
         pix.save(bg_image_path)
         
-        # Insert pristine background image
+        # Insert pristine background canvas
         slide.shapes.add_picture(
             bg_image_path,
             0,
@@ -271,6 +307,19 @@ def convert_pdf_to_pptx(
             width=Pt(page_width),
             height=Pt(page_height)
         )
+
+        # Insert standalone editable picture shapes
+        for img_path, rx, ry, rw, rh in embedded_images:
+            try:
+                slide.shapes.add_picture(
+                    img_path,
+                    Pt(rx),
+                    Pt(ry),
+                    width=Pt(rw),
+                    height=Pt(rh)
+                )
+            except Exception as e:
+                logger.warning(f"Could not add picture shape {img_path}: {e}")
         
         # 2. Smart Hybrid Text Extraction:
         # Check if page has selectable digital vector text
