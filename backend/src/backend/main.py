@@ -359,11 +359,13 @@ async def upload_and_process(
     try:
         if is_pdf:
             output_pptx_path = os.path.join(session_dir, "converted_presentation.pptx")
+            force_ocr = (mode == "ocr")
             converted_path, slides_diff, all_replacements = convert_pdf_to_pptx(
                 pdf_path=doc_save_path,
                 output_pptx_path=output_pptx_path,
                 temp_dir=session_dir,
-                target_font=target_font
+                target_font=target_font,
+                force_ocr=force_ocr
             )
             session_registry[session_id]["pptx_path"] = converted_path
             return ProcessResponse(

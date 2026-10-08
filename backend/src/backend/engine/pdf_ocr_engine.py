@@ -25,8 +25,8 @@ class KhmerOCREngine:
         if self._ocr is None:
             logger.info("Initializing open-source Khmer OCR model (Kiri-OCR)...")
             from kiri_ocr import OCR
-            # Use CPU by default for broad compatibility
-            self._ocr = OCR(device="cpu", decode_method="accurate")
+            # Use CPU with fast decoding method for accelerated performance
+            self._ocr = OCR(device="cpu", decode_method="fast")
             logger.info("Khmer OCR model loaded successfully.")
         return self._ocr
 

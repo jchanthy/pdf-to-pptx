@@ -126,7 +126,8 @@ def convert_pdf_to_pptx(
     pdf_path: str,
     output_pptx_path: str,
     temp_dir: str,
-    target_font: str = "Khmer OS Battambang"
+    target_font: str = "Khmer OS Battambang",
+    force_ocr: bool = False
 ) -> Tuple[str, List[SlideDiff], List[ReplacementItem]]:
     """
     Converts a PDF document directly into an editable PowerPoint presentation.
@@ -187,7 +188,8 @@ def convert_pdf_to_pptx(
             if '/Width 2' in obj and '/Height 2' in obj:
                 p_bg.delete_image(xref)
         
-        pix = p_bg.get_pixmap(dpi=150)
+        # Crisp, fast 120 DPI background rendering
+        pix = p_bg.get_pixmap(dpi=120)
         bg_image_path = os.path.join(temp_dir, f"bg_slide_{page_idx+1}.png")
         pix.save(bg_image_path)
         
@@ -200,77 +202,21 @@ def convert_pdf_to_pptx(
             height=Pt(page_height)
         )
         
-        # 2. Extract and restore text using Open-Source Khmer OCR (Kiri-OCR / CADT)
+        # 2. Smart Hybrid Text Extraction:
+        # Check if page has selectable digital vector text
+        page_dict = page.get_text("dict")
+        text_blocks = [b for b in page_dict.get("blocks", []) if b.get("type") == 0]
+        digital_chars = sum(len(span.get("text", "").strip()) for b in text_blocks for l in b.get("lines", []) for span in l.get("spans", []))
+        has_digital_text = (digital_chars >= 8 and not force_ocr)
+
         slide_replacements: List[ReplacementItem] = []
         full_slide_original: List[str] = []
         full_slide_corrected: List[str] = []
         slide_title = ""
-        
-        # Run OCR on the unredacted page image
-        ocr_items = khmer_ocr_engine.extract_page_ocr(raw_img_path)
-        
-        if ocr_items:
-            logger.info(f"Page {page_idx + 1}: Khmer OCR detected {len(ocr_items)} text elements.")
-            for i_idx, item in enumerate(ocr_items):
-                raw_text = item["text"]
-                if not raw_text.strip():
-                    continue
-                    
-                # Restore Khmer spelling & canonical clusters
-                fixed_text, _ = restore_khmer_text(raw_text)
-                fixed_text = sanitize_khmer_coeng(fixed_text)
-                
-                full_slide_original.append(raw_text)
-                full_slide_corrected.append(fixed_text)
-                
-                box = item["box"]
-                bx = Pt(box[0] * scale_x)
-                by = Pt(box[1] * scale_y)
-                bw = Pt(max(box[2] * scale_x + 12, 30))
-                bh = Pt(max(box[3] * scale_y + 6, 18))
-                
-                if not slide_title and (box[1] * scale_y) < page_height * 0.3 and len(fixed_text) > 3:
-                    slide_title = fixed_text
-                    
-                if raw_text.strip() != fixed_text.strip():
-                    rep_id = str(uuid.uuid4())[:8]
-                    rep_item = ReplacementItem(
-                        id=rep_id,
-                        slide_index=page_idx,
-                        shape_id=f"ocr_shape_{page_idx}_{i_idx}",
-                        paragraph_index=i_idx,
-                        run_index=0,
-                        original=raw_text.strip(),
-                        replacement=fixed_text.strip(),
-                        confidence=item.get("confidence", 0.95),
-                        source="khmer_ocr_restoration",
-                        status="accepted",
-                        explanation="OCR-detected Khmer text corrected with Chuon Nath dictionary",
-                        context=raw_text.strip()
-                    )
-                    slide_replacements.append(rep_item)
-                    all_replacements.append(rep_item)
-                    
-                tx_box = slide.shapes.add_textbox(bx, by, bw, bh)
-                tf = tx_box.text_frame
-                tf.word_wrap = True
-                tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
-                
-                p = tf.paragraphs[0]
-                run = p.add_run()
-                run.text = fixed_text
-                
-                calc_size = max(11.0, min(36.0, (box[3] * scale_y) * 0.72))
-                run.font.size = Pt(calc_size)
-                if (box[3] * scale_y) >= 28:
-                    run.font.bold = True
-                set_run_font_comprehensive(run, target_font)
-        else:
-            # Fallback to PyMuPDF text block extraction if OCR returned nothing
-            page_dict = page.get_text("dict")
-            for b_idx, block in enumerate(page_dict.get("blocks", [])):
-                if block.get("type") != 0:
-                    continue
+
+        if has_digital_text:
+            # Accelerated Path: Instant vector extraction + Chuon Nath restoration (< 0.1s/slide)
+            for b_idx, block in enumerate(text_blocks):
                 bx0, by0, bx1, by1 = block["bbox"]
                 bw = max(bx1 - bx0 + 20, 30)
                 bh = max(by1 - by0 + 10, 20)
@@ -323,7 +269,71 @@ def convert_pdf_to_pptx(
                     if flags & 16:
                         run.font.bold = True
                     set_run_font_comprehensive(run, target_font)
-                
+        else:
+            # Scanned / Image Slide Path: Fast Kiri-OCR (Transformer architecture)
+            pix_ocr = page.get_pixmap(dpi=110)
+            raw_img_path = os.path.join(temp_dir, f"raw_page_{page_idx+1}.png")
+            pix_ocr.save(raw_img_path)
+            scale_x = page_width / pix_ocr.width
+            scale_y = page_height / pix_ocr.height
+
+            ocr_items = khmer_ocr_engine.extract_page_ocr(raw_img_path)
+            if ocr_items:
+                logger.info(f"Page {page_idx + 1}: Khmer OCR detected {len(ocr_items)} text elements.")
+                for i_idx, item in enumerate(ocr_items):
+                    raw_text = item["text"]
+                    if not raw_text.strip():
+                        continue
+                        
+                    fixed_text, _ = restore_khmer_text(raw_text)
+                    fixed_text = sanitize_khmer_coeng(fixed_text)
+                    
+                    full_slide_original.append(raw_text)
+                    full_slide_corrected.append(fixed_text)
+                    
+                    box = item["box"]
+                    bx = Pt(box[0] * scale_x)
+                    by = Pt(box[1] * scale_y)
+                    bw = Pt(max(box[2] * scale_x + 12, 30))
+                    bh = Pt(max(box[3] * scale_y + 6, 18))
+                    
+                    if not slide_title and (box[1] * scale_y) < page_height * 0.3 and len(fixed_text) > 3:
+                        slide_title = fixed_text
+                        
+                    if raw_text.strip() != fixed_text.strip():
+                        rep_id = str(uuid.uuid4())[:8]
+                        rep_item = ReplacementItem(
+                            id=rep_id,
+                            slide_index=page_idx,
+                            shape_id=f"ocr_shape_{page_idx}_{i_idx}",
+                            paragraph_index=i_idx,
+                            run_index=0,
+                            original=raw_text.strip(),
+                            replacement=fixed_text.strip(),
+                            confidence=item.get("confidence", 0.95),
+                            source="khmer_ocr_restoration",
+                            status="accepted",
+                            explanation="OCR-detected Khmer text corrected with Chuon Nath dictionary",
+                            context=raw_text.strip()
+                        )
+                        slide_replacements.append(rep_item)
+                        all_replacements.append(rep_item)
+                        
+                    tx_box = slide.shapes.add_textbox(bx, by, bw, bh)
+                    tf = tx_box.text_frame
+                    tf.word_wrap = True
+                    tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
+                    
+                    p = tf.paragraphs[0]
+                    run = p.add_run()
+                    run.text = fixed_text
+                    
+                    calc_size = max(11.0, min(36.0, (box[3] * scale_y) * 0.72))
+                    run.font.size = Pt(calc_size)
+                    if (box[3] * scale_y) >= 28:
+                        run.font.bold = True
+                    set_run_font_comprehensive(run, target_font)
+
         slides_diff.append(SlideDiff(
             slide_index=page_idx,
             slide_number=page_idx + 1,
@@ -331,7 +341,7 @@ def convert_pdf_to_pptx(
             original_text="\n".join(full_slide_original),
             preview_corrected_text="\n".join(full_slide_corrected),
             replacements=slide_replacements,
-            shape_count=len(ocr_items) if ocr_items else len(page.get_text("blocks")),
+            shape_count=len(slide_replacements) or len(text_blocks),
             table_count=0
         ))
         
