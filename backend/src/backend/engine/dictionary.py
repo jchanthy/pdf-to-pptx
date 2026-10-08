@@ -61,6 +61,10 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "ដល់េវ់": "ដល់ចប់",
     "ដល់ េវ់": "ដល់ចប់",
     "េវ់": "ចប់",
+    "ដីេីប្រាស់": "ដើម្បីប្រើប្រាស់",
+    "ដីើប្រាស់": "ដើម្បីប្រើប្រាស់",
+    "ដីេី": "ដើម្បី",
+    "ដីើ": "ដើម្បី",
     "េនតវត្តាម្": "អនុវត្តតាម",
     "េនតវត្តាម": "អនុវត្តតាម",
     "អក្ជីអរីវ ជអក្មី": "ជ្រើសរើស ជម្រើស",
@@ -1552,7 +1556,7 @@ def sanitize_khmer_coeng(text: str) -> str:
 
 
 def clean_khmer_unicode(text: str) -> str:
-    """Normalize and clean Khmer Unicode string using NFC and standard rules."""
+    """Normalize and clean Khmer Unicode string using NFC and Khmer Encoding Structure (KES)."""
     if not text:
         return ""
     # Strip zero-width space characters that break word matching
@@ -1561,6 +1565,12 @@ def clean_khmer_unicode(text: str) -> str:
     text = text.replace('\u25cc', '')
     # Clean rogue commas or spaces between consonants and dependent vowels/diacritics (e.g. ក,ុំ -> កុំ)
     text = re.sub(r'([\u1780-\u17A2]),\s*([\u17B6-\u17D3])', r'\1\2', text)
+    # Canonicalize syllable cluster ordering and decomposed vowels (KES / UTN #61)
+    try:
+        from .khmer_validator import canonicalize_clusters
+        text = canonicalize_clusters(text)
+    except Exception:
+        pass
     # Unicode NFC normalization
     text = unicodedata.normalize('NFC', text)
     return text

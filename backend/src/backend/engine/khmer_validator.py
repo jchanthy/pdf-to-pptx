@@ -847,8 +847,8 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'(?:^|(?<=\s))A\s*A\s*ួក|AA\s*ួក|AAួក'), 'ពពក'),
     (re.compile(r'េ\s*វិធីសាស្រ្ត|េ\s*វិធីសាស្ត្រ|េវិធីសាស្រ្ត|េវិធីសាស្ត្រ'), 'វិធីសាស្ត្រ'),
     (re.compile(r'(?:^|(?<=\s))េ\s*វិធី(?=[\s\n]|$|[ក-អ])|េវិធី(?=[\s\n]|$|[ក-អ])'), 'វិធី'),
-    (re.compile(r'ដី\s*េ\s*ី\s*ប្រាស់|ដីេីប្រាស់'), 'ដើម្បីប្រើប្រាស់'),
-    (re.compile(r'ដី\s*េ\s*ី(?=[\s\n]|$|[ក-អ])|ដីេី(?=[\s\n]|$|[ក-អ])'), 'ដើម្បី'),
+    (re.compile(r'ដី\s*េ\s*ី\s*ប្រាស់|ដីេីប្រាស់|ដីើប្រាស់'), 'ដើម្បីប្រើប្រាស់'),
+    (re.compile(r'ដី\s*េ\s*ី(?=[\s\n]|$|[ក-អ])|ដីេី(?=[\s\n]|$|[ក-អ])|ដីើ(?=[\s\n]|$|[ក-អ])'), 'ដើម្បី'),
     (re.compile(r'ប\s*ដី\s*េ\s*ី\s*ប|បដីេីប'), 'ដើម្បី'),
     (re.compile(r'បប្បី\s*ប្បាស់|បប្បីប្បាស់|បប្រើ\s*បប្រាស់|បប្រើបប្រាស់|ប្រើ\s*បប្រាស់|ប្រើបប្រាស់'), 'ប្រើប្រាស់'),
     (re.compile(r'ចូល\s*បប្រើ|ចូលបប្រើ|ចូល\s*បប្បី|ចូលបប្បី'), 'ចូលប្រើ'),
@@ -907,6 +907,9 @@ def canonicalize_clusters(text: str) -> str:
     s = s.replace('\u17C1\u17B6', '\u17C4').replace('\u17B6\u17C1', '\u17C4')
     s = s.replace('\u17C6\u17B6', '\u17B6\u17C6')
     s = s.replace('\u17C1\u17C5', '\u17C5')
+    s = s.replace('\u17C1\u17BE', '\u17BE')
+    # Reorder misplaced Coeng after dependent vowel (e.g. Consonant + Vowel + Coeng + Subscript -> Consonant + Coeng + Subscript + Vowel)
+    s = re.sub(r'([\u1780-\u17A2])([\u17B6-\u17C5])\u17D2([\u1780-\u17A2])', '\\1\u17d2\\3\\2', s)
     # Collapse duplicates
     s = re.sub(r'(\u17B6){2,}', r'\1', s)
     s = re.sub(r'(\u17C1){2,}', r'\1', s)
