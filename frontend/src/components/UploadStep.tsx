@@ -62,15 +62,6 @@ export const UploadStep: React.FC<UploadStepProps> = ({
       <div className="w-full flex-1 max-h-[380px] min-h-[190px] flex flex-col">
         {/* Single Document Upload Zone */}
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between mb-1.5 shrink-0">
-            <label className="text-xs sm:text-sm font-bold text-slate-800 flex items-center space-x-1.5">
-              <span className="w-2 h-2 rounded-full bg-indigo-600 inline-block" />
-              <span>{t.upload_pptx_title}</span>
-              <span className="text-rose-500 font-bold">*</span>
-            </label>
-            <span className="text-[11px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md font-mono font-semibold">.pptx / .docx / .pdf</span>
-          </div>
-
           <div
             onDragOver={(e) => {
               e.preventDefault();
