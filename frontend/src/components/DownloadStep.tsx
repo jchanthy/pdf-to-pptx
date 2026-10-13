@@ -4,6 +4,7 @@ import {
   Sparkles,
   RotateCcw,
   Edit3,
+  FileText,
 } from 'lucide-react';
 import type { Language } from '../types';
 import { translations } from '../i18n/translations';
@@ -13,7 +14,9 @@ interface DownloadStepProps {
   targetFont: string;
   totalSlides: number;
   totalFixed: number;
+  documentType?: 'pptx' | 'docx' | 'pdf';
   onDownloadAgain: () => void;
+  onDownloadAsPptx?: () => void;
   onStartOver: () => void;
   onPreviewEdit: () => void;
   isLoading?: boolean;
@@ -24,12 +27,32 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
   targetFont,
   totalSlides,
   totalFixed,
+  documentType = 'pptx',
   onDownloadAgain,
+  onDownloadAsPptx,
   onStartOver,
   onPreviewEdit,
   isLoading,
 }) => {
   const t = translations[language];
+
+  const getDownloadButtonLabel = () => {
+    if (isLoading) {
+      return language === 'km' ? 'កំពុងបង្កើតឯកសារ...' : 'Generating...';
+    }
+    if (documentType === 'docx') {
+      return language === 'km' ? 'ទាញយកឯកសារ Word (.docx)' : 'Download Corrected Word (.docx)';
+    }
+    if (documentType === 'pdf') {
+      return language === 'km' ? 'ទាញយកឯកសារ PDF (.pdf)' : 'Download Corrected PDF (.pdf)';
+    }
+    return language === 'km' ? 'ទាញយកឯកសារ PPTX (.pptx)' : 'Download Corrected PPTX (.pptx)';
+  };
+
+  const getSuffixLabel = () => {
+    const ext = documentType === 'docx' ? '.docx' : (documentType === 'pdf' ? '.pdf' : '.pptx');
+    return language === 'km' ? `កន្ទុយឈ្មោះឯកសារ: _fixed${ext}` : `Filename suffix: _fixed${ext}`;
+  };
 
   return (
     <div className="max-w-xl w-full mx-auto h-full flex flex-col justify-center items-center py-1 sm:py-2 px-4 text-center space-y-3 sm:space-y-4">
@@ -57,7 +80,9 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
       {/* Summary Metrics Card */}
       <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-xs grid grid-cols-3 gap-3 text-center w-full max-w-md shrink-0">
         <div>
-          <p className="text-[11px] font-semibold text-slate-400 font-khmer">{t.stats_slides}</p>
+          <p className="text-[11px] font-semibold text-slate-400 font-khmer">
+            {documentType === 'docx' ? (language === 'km' ? 'ទំព័រ / ផ្នែក' : 'Pages / Sections') : t.stats_slides}
+          </p>
           <p className="text-xl font-extrabold text-slate-900 mt-0.5">{totalSlides}</p>
         </div>
         <div className="border-x border-slate-100">
@@ -72,7 +97,7 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
         </div>
       </div>
 
-      {/* Primary Action Button */}
+      {/* Primary Action Button (Matches Uploaded File Type) */}
       <div className="space-y-1.5 shrink-0 w-full max-w-xs">
         <button
           onClick={onDownloadAgain}
@@ -87,15 +112,25 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
           ) : (
             <Download className="w-4 h-4" />
           )}
-          <span className="font-khmer">
-            {isLoading
-              ? (language === 'km' ? 'កំពុងបង្កើតឯកសារ...' : 'Generating...')
-              : t.download_button}
-          </span>
+          <span className="font-khmer">{getDownloadButtonLabel()}</span>
         </button>
         <p className="text-[11px] text-slate-400 font-mono">
-          {t.download_file_suffix}
+          {getSuffixLabel()}
         </p>
+
+        {/* Optional Secondary PPTX Download for PDF uploads */}
+        {documentType === 'pdf' && onDownloadAsPptx && (
+          <button
+            onClick={onDownloadAsPptx}
+            disabled={isLoading}
+            className="w-full mt-2 inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 transition cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 text-amber-600" />
+            <span className="font-khmer">
+              {language === 'km' ? 'ទាញយកជា PowerPoint (.pptx)' : 'Download as PowerPoint (.pptx)'}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Secondary Actions */}

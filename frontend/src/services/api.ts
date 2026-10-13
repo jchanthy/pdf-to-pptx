@@ -63,7 +63,8 @@ export async function loadSamplePresentation(): Promise<ProcessResponse> {
 export async function applyFixesAndDownload(
   sessionId: string,
   targetFont: string,
-  replacements: ReplacementItem[]
+  replacements: ReplacementItem[],
+  format: 'original' | 'pptx' | 'pdf' = 'original'
 ): Promise<Blob> {
   const res = await fetch(`${API_BASE}/apply-and-download`, {
     method: 'POST',
@@ -74,6 +75,7 @@ export async function applyFixesAndDownload(
       session_id: sessionId,
       target_font: targetFont,
       replacements: replacements,
+      format: format,
     }),
   });
 

@@ -49,6 +49,7 @@ class ApplyFixesRequest(BaseModel):
     session_id: str
     target_font: str = "Khmer OS Battambang"
     replacements: List[ReplacementItem]
+    format: Optional[str] = "original"
 
 
 class FontOption(BaseModel):

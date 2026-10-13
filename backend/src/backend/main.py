@@ -26,6 +26,7 @@ from .engine.dictionary import replace_dictionary_terms, repair_khmer_heuristics
 from .engine.legacy_converter import convert_limon_to_unicode, is_likely_legacy_font
 from .engine.pdf_extractor import extract_text_from_pdf
 from .engine.pdf_to_pptx import convert_pdf_to_pptx
+from .engine.pdf_processor import apply_pdf_replacements_and_fonts
 from .engine.text_aligner import align_slide_with_pdf
 from .engine.gemini_restorer import restore_with_gemini
 from .engine.pptx_processor import (
@@ -333,8 +334,13 @@ async def upload_and_process(
 
     saved_doc_name = "input.docx" if is_docx else ("input.pdf" if is_pdf else "input.pptx")
     doc_save_path = os.path.join(session_dir, saved_doc_name)
+    content = await upload_doc.read()
+    if not content or len(content) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded file is empty (0 bytes). Please upload a valid document."
+        )
     with open(doc_save_path, "wb") as f:
-        content = await upload_doc.read()
         f.write(content)
 
     pdf_save_path = None
@@ -477,7 +483,21 @@ def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundT
         fixed_filename = f"{base_name}_fixed{ext}"
         output_path = os.path.join(BASE_TEMP_DIR, session_id, fixed_filename)
 
-        if doc_type == "pdf":
+        if doc_type == "pdf" and getattr(payload, "format", "original") != "pptx":
+            pdf_path = meta.get("pdf_path") or meta["doc_path"]
+            apply_pdf_replacements_and_fonts(
+                pdf_path=pdf_path,
+                output_path=output_path,
+                replacements=valid_replacements,
+                target_font=target_font
+            )
+            logger.info(f"Session {session_id}: applied fixes directly to PDF document {fixed_filename}.")
+            return FileResponse(
+                output_path,
+                filename=fixed_filename,
+                media_type="application/pdf"
+            )
+        elif doc_type == "pdf":
             converted_filename = f"{base_name}.pptx"
             output_pptx_path = meta.get("pptx_path")
             if not output_pptx_path or not os.path.exists(output_pptx_path):

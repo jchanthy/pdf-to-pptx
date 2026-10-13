@@ -89,13 +89,14 @@ export function App() {
       const blob = await applyFixesAndDownload(
         processResult.session_id,
         options.target_font,
-        updatedReplacements
+        updatedReplacements,
+        'original'
       );
-      const isDocx = processResult.document_type === 'docx';
-      const ext = isDocx ? '.docx' : '.pptx';
+      const docType = processResult.document_type;
+      const ext = docType === 'docx' ? '.docx' : (docType === 'pdf' ? '.pdf' : '.pptx');
       const baseName = processResult.filename
         ? processResult.filename.replace(/\.[^/.]+$/, '')
-        : (isDocx ? 'document' : 'presentation');
+        : (docType === 'docx' ? 'document' : (docType === 'pdf' ? 'document' : 'presentation'));
       triggerFileDownload(blob, `${baseName}_fixed${ext}`);
       setCurrentStep(3);
     } catch (err: any) {
@@ -113,17 +114,40 @@ export function App() {
       const blob = await applyFixesAndDownload(
         processResult.session_id,
         options.target_font,
-        savedReplacements
+        savedReplacements,
+        'original'
       );
-      const isDocx = processResult.document_type === 'docx';
-      const ext = isDocx ? '.docx' : '.pptx';
+      const docType = processResult.document_type;
+      const ext = docType === 'docx' ? '.docx' : (docType === 'pdf' ? '.pdf' : '.pptx');
       const baseName = processResult.filename
         ? processResult.filename.replace(/\.[^/.]+$/, '')
-        : (isDocx ? 'document' : 'presentation');
+        : (docType === 'docx' ? 'document' : (docType === 'pdf' ? 'document' : 'presentation'));
       triggerFileDownload(blob, `${baseName}_fixed${ext}`);
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || 'Failed to download');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownloadAsPptx = async () => {
+    if (!processResult) return;
+    setIsLoading(true);
+    try {
+      const blob = await applyFixesAndDownload(
+        processResult.session_id,
+        options.target_font,
+        savedReplacements,
+        'pptx'
+      );
+      const baseName = processResult.filename
+        ? processResult.filename.replace(/\.[^/.]+$/, '')
+        : 'presentation';
+      triggerFileDownload(blob, `${baseName}_converted.pptx`);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage(err.message || 'Failed to download PowerPoint presentation');
     } finally {
       setIsLoading(false);
     }
@@ -202,7 +226,9 @@ export function App() {
                 (r) => r.status === 'accepted' || r.status === 'modified'
               ).length
             }
+            documentType={processResult.document_type as any}
             onDownloadAgain={handleDownloadAgain}
+            onDownloadAsPptx={processResult.document_type === 'pdf' ? handleDownloadAsPptx : undefined}
             onStartOver={handleStartOver}
             onPreviewEdit={() => setCurrentStep(2)}
             isLoading={isLoading}

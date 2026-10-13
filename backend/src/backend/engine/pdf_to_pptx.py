@@ -281,6 +281,11 @@ def convert_pdf_to_pptx(
         blank_layout = prs.slide_layouts[6]
         slide = prs.slides.add_slide(blank_layout)
         
+        slide_replacements: List[ReplacementItem] = []
+        full_slide_original: List[str] = []
+        full_slide_corrected: List[str] = []
+        slide_title = ""
+        
         # Render unredacted pixmap for high-fidelity Khmer OCR
         pix_ocr = page.get_pixmap(dpi=150)
         raw_img_path = os.path.join(temp_dir, f"raw_page_{page_idx+1}.png")
@@ -436,11 +441,6 @@ def convert_pdf_to_pptx(
         text_blocks = _merge_adjacent_text_blocks(raw_text_blocks)
         digital_chars = sum(len(span.get("text", "").strip()) for b in text_blocks for l in b.get("lines", []) for span in l.get("spans", []))
         has_digital_text = (digital_chars >= 8 and not force_ocr)
-
-        slide_replacements: List[ReplacementItem] = []
-        full_slide_original: List[str] = []
-        full_slide_corrected: List[str] = []
-        slide_title = ""
 
         if has_digital_text:
             # Exclude text blocks that lie inside any real table bounds
