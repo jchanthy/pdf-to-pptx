@@ -1646,7 +1646,7 @@ HEURISTIC_RULES: List[Tuple[re.Pattern, str, str]] = [
     # 16. Deduplicate redundant pre-vowel េ before Sra Ie ៀ (fixes ទេៀត -> ទៀត):
     (
         re.compile(r'([\u1780-\u17A2])\u17C1\u17C0'),
-        r'\1\u17C0',
+        '\\1\u17C0',
         "Deduplicate pre-vowel េ before Sra Ie ៀ"
     ),
     # 17. Clean invalid colliding vowels ៃ and ៅ:

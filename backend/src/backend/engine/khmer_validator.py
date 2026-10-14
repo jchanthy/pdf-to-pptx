@@ -1039,8 +1039,8 @@ class KhmerValidator:
                             for i in range(5, len(norm_word)):
                                 self.prefixes.add(norm_word[:i])
                             
-        # Supplement with standard modern ICT compound terms
-        tech_compounds = [
+        # Supplement with standard modern ICT compound terms, proper names and loanwords
+        extra_terms = [
             "កុំព្យូទ័រយួរដៃ", "កុំព្យូទ័រផ្ទាល់ខ្លួន", "កុំព្យូទ័រលើតុ",
             "ឧបករណ៍ផ្ទុក", "អង្គចងចាំ", "ប្រព័ន្ធប្រតិបត្តិការ",
             "កម្មវិធីប្រព័ន្ធ", "កម្មវិធីអនុវត្តន៍", "ផ្ទៃអេក្រង់",
@@ -1055,15 +1055,31 @@ class KhmerValidator:
             "ប៊ីត", "មេហ្គាប៊ីត", "គីឡូប៊ីត", "ជីហ្គាប៊ីត", "តេរ៉ាប៊ីត",
             "បៃ", "មេហ្គាបៃ", "គីឡូបៃ", "ជីហ្គាបៃ", "វើលវ៉ាយវិប",
             "គន្លឹះ", "យូអេសប៊ី", "មេម៉ូរីកាត", "ហ្គេម", "វីដេអូ",
-            "អេឡិចត្រូនិច", "អេឡិចត្រូនិក", "ខ្សែកាបអុបទិក", "កម្មវិធីព្យាបាទ"
+            "អេឡិចត្រូនិច", "អេឡិចត្រូនិក", "ខ្សែកាបអុបទិក", "កម្មវិធីព្យាបាទ",
+            # Common proper names, loanwords, and standalone modern terms
+            "សុហ្វី", "ហ្វី", "សូហ្វី", "សូហ្វៀ", "ធី", "កញ្ញា", "កាហ្វេ", "សូហ្វា",
+            "ព្យូទ័រ", "តើកុំព្យូទ័រ"
         ]
-        for compound in tech_compounds:
+        for compound in extra_terms:
             norm = unicodedata.normalize("NFC", compound)
             self.words.add(norm)
             if len(norm) >= 8:
                 for i in range(5, len(norm)):
                     self.prefixes.add(norm[:i])
                 
+        # Automatically ingest all target words from the corruption dictionary
+        try:
+            from .dictionary import KHMER_CORRUPTION_DICTIONARY
+            for target in KHMER_CORRUPTION_DICTIONARY.values():
+                for sub in re.findall(r'[\u1780-\u17D3]+', target):
+                    if len(sub) >= 2:
+                        norm_sub = unicodedata.normalize("NFC", sub)
+                        self.words.add(norm_sub)
+                        if len(norm_sub) > self.max_word_len:
+                            self.max_word_len = len(norm_sub)
+        except Exception:
+            pass
+
         # Add explicit compound prefixes common across line breaks
         explicit_prefixes = ["កុំព្យូ", "បច្ចេក", "គមនា", "ប្រតិបត្តិ", "អភិបាល", "សហគ្រាស", "កម្មវិ"]
         for p in explicit_prefixes:
@@ -1088,7 +1104,7 @@ class KhmerValidator:
         ]
         for term in common_ict_terms:
             self.tech_words.add(unicodedata.normalize("NFC", term))
-        for compound in tech_compounds:
+        for compound in extra_terms:
             norm = unicodedata.normalize("NFC", compound)
             self.tech_words.add(norm)
             for part in re.findall(r'[\u1780-\u17D3]+', norm):

@@ -83,12 +83,12 @@ export const translations = {
     btn_reset_table: "Reset Edits",
     
     // Download
-    download_title: "Your Presentation is Ready!",
-    download_desc: "All legacy glyphs have been rewritten to clean Khmer Unicode, layouts and formatting preserved, and font set to",
-    download_button: "Download Corrected PPTX",
-    download_runs_updated: "Text Runs Updated",
-    download_file_suffix: "Filename suffix: _fixed.pptx",
-    download_start_over: "Process Another Presentation",
+    download_title: "Your Document is Ready!",
+    download_desc: "All text has been restored to standard Khmer Unicode structure.",
+    download_button: "Download Corrected File",
+    download_runs_updated: "Fixed Items",
+    download_file_suffix: "",
+    download_start_over: "Upload New File",
     
     // Errors & Alerts
     alert_no_pptx: "Please select a target .pptx file before continuing.",
@@ -246,12 +246,12 @@ export const translations = {
     btn_reset_table: "កំណត់ឡើងវិញ",
     
     // Download
-    download_title: "ឯកសាររបស់អ្នករួចរាល់ហើយ!",
-    download_desc: "រាល់អក្សរចាស់ និងអក្សរខូចត្រូវបានបំលែងទៅជាយូនីកូដត្រឹមត្រូវ ដោយរក្សាទ្រង់ទ្រាយ ពណ៌ ទំហំ និងកំណត់ពុម្ពអក្សរទៅជា",
-    download_button: "ទាញយកឯកសារ PPTX ដែលបានកែ",
-    download_runs_updated: "ចំនួនបំណែកអក្សរដែលបានកែ",
-    download_file_suffix: "កន្ទុយឈ្មោះឯកសារ: _fixed.pptx",
-    download_start_over: "ជួសជុលបទបង្ហាញផ្សេងទៀត",
+    download_title: "ឯកសាររបស់អ្នករួចរាល់ហើយ",
+    download_desc: "អក្សរខ្មែរត្រូវបានកែតម្រូវតាមរចនាសម្ព័ន្ធយូនីកូដត្រឹមត្រូវ",
+    download_button: "ទាញយកឯកសារ",
+    download_runs_updated: "ចំណុចបានកែ",
+    download_file_suffix: "",
+    download_start_over: "ផ្ទុកឯកសារថ្មី",
     
     // Errors & Alerts
     alert_no_pptx: "សូមជ្រើសរើសឯកសារ PPTX គោលដៅជាមុនសិន។",
