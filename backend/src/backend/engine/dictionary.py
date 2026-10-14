@@ -1528,6 +1528,26 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "សរុប": "សរុប",
     "កំណត់សម្គាល់": "កំណត់សម្គាល់",
     "ផ្សេងៗ": "ផ្សេងៗ",
+    "វាប្ត្វូបាន": "វាត្រូវបាន",
+    "ប្ត្វូបាន": "ត្រូវបាន",
+    "ប្ត្វូ": "ត្រូវ",
+    "ដំយើង": "ដំឡើង",
+}
+
+# Phrase-level fixes applied AFTER KES canonical ordering (keys are canonical forms).
+FINAL_PHRASE_FIXES: Dict[str, str] = {
+    'មា"លវោ': "ម៉ាល់វែរ",
+    "បដិមា ល់វវជាអ្វី?": "ម៉ាល់វែរ ជាអ្វី?",
+    "សំដៅបៅលើពពក": "សំដៅលើពពួក",
+    "ទប្ងេ់": "ទម្រង់",
+    "ទៀតនុកូដ": "ទៀត។ កូដ",
+    "វាប្ត្វូបាន": "វាត្រូវបាន",
+    "ប្ត្វូបាន": "ត្រូវបាន",
+    "ដំយើង": "ដំឡើង",
+    "ដោយឃ្មមៗ នការយល់បាពើ": "ដោយគ្មានការយល់ដឹងពី",
+    "វកការកំណត់រចនាសេពនធ": "ឬការកំណត់រចនាសម្ព័ន្ធ",
+    "ប្រមូលយកាតមានដែលរក្សាទុកខក្នុងកុំព្យូយទ័រ": "ប្រមូលយកព័ត៌មានដែលរក្សាទុកក្នុងកុំព្យូទ័រ",
+    "បែកផ្ទះ ងវីនដូបន្ថែម": "បើកផ្ទាំងវីនដូបន្ថែម",
 }
 
 # Regex heuristics for repairing common Unicode encoding flaws in Khmer
@@ -1924,6 +1944,20 @@ def restore_khmer_text(text: str, custom_dict: Dict[str, str] = None) -> Tuple[s
     # 4. Heuristic repairs & Coeng sanitization
     fixed, _ = repair_khmer_heuristics(fixed)
     fixed = sanitize_khmer_coeng(fixed)
+
+    # 5. Official Khmer Encoding Structure (SIL khnormal / CADT-IDRI) canonical ordering
+    try:
+        from .kes_normalizer import normalize_kes
+        fixed = normalize_kes(fixed)
+    except Exception:
+        pass
+    fixed = sanitize_khmer_coeng(fixed)
+
+    # 6. Certain phrase-level corrections for legacy-font substitutions that
+    #    structure rules cannot detect (applied on already-canonical text).
+    for wrong in sorted(FINAL_PHRASE_FIXES, key=len, reverse=True):
+        if wrong in fixed:
+            fixed = fixed.replace(wrong, FINAL_PHRASE_FIXES[wrong])
 
     # Extract word-level differences between original text and final fixed text
     diffs = extract_word_level_differences(text, fixed)
