@@ -23,7 +23,10 @@ LEGACY_GLYPH_TRANSFORMS: List[Tuple[re.Pattern, str]] = [
     # Latin 'f' as Khmer 'រ' (only when adjacent to Khmer characters)
     (re.compile(r'(?<=[\u1780-\u17FF])f|f(?=[\u1780-\u17FF])'), 'រ'),
     # Common legacy ASCII/mixed Latin glyphs in Khmer words
-    (re.compile(r'[ñក]មេែ[\u25cc\u17b6-\u17d3\s]*ធី'), 'កម្មវិធី'),
+    (re.compile(r'(?:[ñក]|គេ)[មេែ]+[\u25cc\u17b6-\u17d3\s]*[ធថ][ីិូ]+[ំ]*\s*ល[ិេ]ច(?:\s*ឡើង)?'), 'កម្មវិធីលេចឡើង'),
+    (re.compile(r'(?:[ñក]|គេ)[មេែ]+[\u25cc\u17b6-\u17d3\s]*[ធថ][ីិូ]+[ំ]*'), 'កម្មវិធី'),
+    (re.compile(r'ហ្អែង\s*S\s*ែ|ហ្អែងSែ|ហ្អែងS|ហ្អែង'), 'ផ្សេងៗ'),
+    (re.compile(r'ទង\s*អញាណ|ទងអញាណ'), 'សញ្ញាណ'),
     (re.compile(r'ឆ្លR'), 'ឆ្លង'),
     (re.compile(r'[ñក]នុ[Rង]'), 'ក្នុង'),
     (re.compile(r'[Uប]ណ្តល\s*មោF|[Uប]ណ្តល\s*ឱ្យ|[Uប]ណ្តល\s*អោយ'), 'បណ្ដាលឱ្យ'),
