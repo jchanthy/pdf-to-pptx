@@ -52,6 +52,11 @@ export function App() {
     setLanguage((prev) => (prev === 'km' ? 'en' : 'km'));
   };
 
+  const handleFontAdded = (newFont: FontOption) => {
+    setFonts((prev) => [newFont, ...prev.filter((f) => f.name.toLowerCase() !== newFont.name.toLowerCase())]);
+    setOptions((prev) => ({ ...prev, target_font: newFont.name }));
+  };
+
   const handleUploadSubmit = async (pptxFile: File | null, pdfFile: File | null) => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -233,6 +238,7 @@ export function App() {
             fonts={fonts}
             targetFont={options.target_font}
             onTargetFontChange={(font) => setOptions((prev) => ({ ...prev, target_font: font }))}
+            onFontAdded={handleFontAdded}
             onSubmit={handleUploadSubmit}
             isLoading={isLoading}
           />
@@ -245,6 +251,7 @@ export function App() {
             fonts={fonts}
             targetFont={options.target_font}
             onTargetFontChange={(font) => setOptions((prev) => ({ ...prev, target_font: font }))}
+            onFontAdded={handleFontAdded}
             onProceedToDownload={handleProceedToDownload}
             onBackToUpload={() => setCurrentStep(1)}
             isLoading={isLoading}
@@ -257,6 +264,7 @@ export function App() {
             fonts={fonts}
             targetFont={options.target_font}
             onTargetFontChange={(font) => setOptions((prev) => ({ ...prev, target_font: font }))}
+            onFontAdded={handleFontAdded}
             totalSlides={processResult.total_slides}
             totalFixed={
               savedReplacements.filter(

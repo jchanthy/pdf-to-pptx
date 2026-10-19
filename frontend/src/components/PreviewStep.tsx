@@ -20,6 +20,7 @@ interface PreviewStepProps {
   fonts: FontOption[];
   targetFont: string;
   onTargetFontChange: (font: string) => void;
+  onFontAdded?: (newFont: FontOption) => void;
   onProceedToDownload: (replacements: ReplacementItem[]) => void;
   onBackToUpload: () => void;
   isLoading: boolean;
@@ -31,6 +32,7 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
   fonts,
   targetFont,
   onTargetFontChange,
+  onFontAdded,
   onProceedToDownload,
   onBackToUpload,
   isLoading,
@@ -185,6 +187,7 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
             fonts={fonts}
             selectedFont={targetFont}
             onChange={onTargetFontChange}
+            onFontAdded={onFontAdded}
             language={language}
             compact
             label={t.stats_font}

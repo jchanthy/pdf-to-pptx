@@ -12,6 +12,7 @@ interface UploadStepProps {
   fonts: FontOption[];
   targetFont: string;
   onTargetFontChange: (font: string) => void;
+  onFontAdded?: (newFont: FontOption) => void;
   onSubmit: (pptx: File | null, pdf: File | null) => void;
   isLoading: boolean;
   onLoadSample?: () => void;
@@ -22,6 +23,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
   fonts,
   targetFont,
   onTargetFontChange,
+  onFontAdded,
   onSubmit,
   isLoading,
 }) => {
@@ -72,6 +74,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
           fonts={fonts}
           selectedFont={targetFont}
           onChange={onTargetFontChange}
+          onFontAdded={onFontAdded}
           language={language}
           className="shrink-0"
         />

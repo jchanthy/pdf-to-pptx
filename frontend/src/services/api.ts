@@ -32,6 +32,20 @@ export async function getFonts(): Promise<FontOption[]> {
   }
 }
 
+export async function uploadCustomFont(fontFile: File): Promise<FontOption> {
+  const formData = new FormData();
+  formData.append('font_file', fontFile);
+  const res = await fetch(`${API_BASE}/upload-font`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || 'Failed to upload and register font');
+  }
+  return await res.json();
+}
+
 export async function uploadAndProcess(
   docFile: File | null,
   pdfFile: File | null,

@@ -15,6 +15,7 @@ interface DownloadStepProps {
   fonts?: FontOption[];
   targetFont: string;
   onTargetFontChange?: (font: string) => void;
+  onFontAdded?: (newFont: FontOption) => void;
   totalSlides: number;
   totalFixed: number;
   documentType?: 'pptx' | 'docx' | 'pdf';
@@ -31,6 +32,7 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
   fonts = [],
   targetFont,
   onTargetFontChange,
+  onFontAdded,
   totalSlides,
   totalFixed,
   documentType = 'pptx',
@@ -98,6 +100,7 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
             fonts={fonts}
             selectedFont={targetFont}
             onChange={onTargetFontChange}
+            onFontAdded={onFontAdded}
             language={language}
             label={language === 'km' ? 'ពុម្ពអក្សរមុនទាញយក' : 'Font for Download'}
           />

@@ -53,11 +53,34 @@ def get_installed_system_fonts() -> set:
     return installed
 
 
+CUSTOM_UPLOADED_FONTS: List[Dict] = []
+
+
+def register_custom_font(font_name: str, category: str = "Custom Uploaded") -> Dict:
+    """Registers an uploaded font into the in-memory font registry."""
+    for existing in CUSTOM_UPLOADED_FONTS:
+        if existing["name"].lower() == font_name.lower():
+            return existing
+    entry = {
+        "name": font_name,
+        "category": category,
+        "default": True,
+        "installed": True
+    }
+    CUSTOM_UPLOADED_FONTS.insert(0, entry)
+    return entry
+
+
 def get_font_options() -> List[Dict]:
     """Returns the list of recommended Khmer fonts annotated with real system installation status and smart default."""
     installed = get_installed_system_fonts()
     result = []
-    default_assigned = False
+    
+    # 1. Add any user-uploaded fonts first
+    for uf in CUSTOM_UPLOADED_FONTS:
+        result.append(dict(uf))
+        
+    default_assigned = bool(CUSTOM_UPLOADED_FONTS)
 
     for item in RECOMMENDED_KHMER_FONTS:
         key = item["key"]
@@ -69,25 +92,26 @@ def get_font_options() -> List[Dict]:
             "installed": is_inst
         })
 
-    # Pick smart default:
-    # 1. If Khmer OS Battambang is installed, choose it
-    for opt in result:
-        if opt["name"] == "Khmer OS Battambang" and opt["installed"]:
-            opt["default"] = True
-            default_assigned = True
-            break
-
-    # 2. On Windows, if Battambang isn't installed but DaunPenh is installed, default to DaunPenh
-    if not default_assigned and os.name == "nt":
+    # Pick smart default if no user-uploaded font is default:
+    if not default_assigned:
+        # 1. If Khmer OS Battambang is installed, choose it
         for opt in result:
-            if opt["name"] == "DaunPenh" and opt["installed"]:
+            if opt["name"] == "Khmer OS Battambang" and opt["installed"]:
                 opt["default"] = True
                 default_assigned = True
                 break
 
-    # 3. Otherwise default to first font (Khmer OS Battambang)
-    if not default_assigned and result:
-        result[0]["default"] = True
+        # 2. On Windows, if Battambang isn't installed but DaunPenh is installed, default to DaunPenh
+        if not default_assigned and os.name == "nt":
+            for opt in result:
+                if opt["name"] == "DaunPenh" and opt["installed"]:
+                    opt["default"] = True
+                    default_assigned = True
+                    break
+
+        # 3. Otherwise default to first font
+        if not default_assigned and result:
+            result[0]["default"] = True
 
     return result
 

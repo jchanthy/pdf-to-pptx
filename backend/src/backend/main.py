@@ -40,6 +40,7 @@ from .engine.gemini_restorer import restore_with_gemini
 from .engine.pptx_processor import (
     RECOMMENDED_KHMER_FONTS,
     get_font_options,
+    register_custom_font,
     apply_replacements_and_fonts,
     extract_presentation_runs,
 )
@@ -132,6 +133,71 @@ def health_check():
 @app.get("/fonts", response_model=List[FontOption])
 def get_fonts():
     return [FontOption(**f) for f in get_font_options()]
+
+
+@app.post("/api/upload-font", response_model=FontOption)
+@app.post("/upload-font", response_model=FontOption)
+async def upload_font(font_file: UploadFile = File(...)):
+    """
+    Uploads a custom TrueType (.ttf) or OpenType (.otf) font file,
+    registers it with the host operating system, and returns the font family option.
+    """
+    if not font_file.filename:
+        raise HTTPException(status_code=400, detail="No font file uploaded.")
+    
+    fname_lower = font_file.filename.lower()
+    if not (fname_lower.endswith(".ttf") or fname_lower.endswith(".otf")):
+        raise HTTPException(status_code=400, detail="Invalid font format. Please upload a .ttf or .otf font file.")
+
+    content = await font_file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Font file is empty.")
+
+    # Determine destination directory
+    if os.name == "nt":
+        user_fonts_dir = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "Windows", "Fonts")
+        if not os.path.exists(user_fonts_dir):
+            user_fonts_dir = os.path.join(tempfile.gettempdir(), "fonts")
+    else:
+        user_fonts_dir = os.path.expanduser("~/.local/share/fonts")
+        
+    os.makedirs(user_fonts_dir, exist_ok=True)
+    dest_path = os.path.join(user_fonts_dir, font_file.filename)
+    
+    with open(dest_path, "wb") as f:
+        f.write(content)
+
+    # Inspect font name with PyMuPDF
+    try:
+        f_obj = pymupdf.Font(fontfile=dest_path)
+        raw_name = f_obj.name
+        for suffix in ["-Regular", " Regular", "-Bold", " Bold", "-Italic", " Italic"]:
+            if raw_name.endswith(suffix):
+                raw_name = raw_name[:-len(suffix)]
+        font_name = raw_name.strip()
+    except Exception as e:
+        font_name = os.path.splitext(font_file.filename)[0]
+
+    # Register in OS
+    if os.name == "nt":
+        try:
+            import ctypes
+            gdi32 = ctypes.WinDLL("gdi32")
+            gdi32.AddFontResourceW(dest_path)
+            user32 = ctypes.WinDLL("user32")
+            user32.SendMessageW(0xFFFF, 0x001D, 0, 0)
+        except Exception as e:
+            logger.warning(f"Could not register font in Windows GDI: {e}")
+    else:
+        try:
+            import subprocess
+            subprocess.run(["fc-cache", "-f"], check=False)
+        except Exception:
+            pass
+
+    font_entry = register_custom_font(font_name)
+    logger.info(f"Successfully uploaded and registered custom font: {font_name} from {font_file.filename}")
+    return FontOption(**font_entry)
 
 
 class CustomDictEntryRequest(BaseModel):
