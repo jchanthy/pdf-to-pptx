@@ -196,6 +196,10 @@ export function App() {
       {/* Navbar */}
       <Navbar
         language={language}
+        fonts={fonts}
+        selectedFont={options.target_font}
+        onTargetFontChange={(font) => setOptions((prev) => ({ ...prev, target_font: font }))}
+        onFontAdded={handleFontAdded}
         onLanguageToggle={handleLanguageToggle}
         onLogoClick={handleStartOver}
         onOpenDictionary={() => setIsDictOpen(true)}
@@ -235,10 +239,6 @@ export function App() {
           <UploadStep
             key={resetKey}
             language={language}
-            fonts={fonts}
-            targetFont={options.target_font}
-            onTargetFontChange={(font) => setOptions((prev) => ({ ...prev, target_font: font }))}
-            onFontAdded={handleFontAdded}
             onSubmit={handleUploadSubmit}
             isLoading={isLoading}
           />

@@ -3,16 +3,11 @@ import {
   Upload,
   FileText,
 } from 'lucide-react';
-import type { FontOption, Language } from '../types';
+import type { Language } from '../types';
 import { translations } from '../i18n/translations';
-import { FontSelector } from './FontSelector';
 
 interface UploadStepProps {
   language: Language;
-  fonts: FontOption[];
-  targetFont: string;
-  onTargetFontChange: (font: string) => void;
-  onFontAdded?: (newFont: FontOption) => void;
   onSubmit: (pptx: File | null, pdf: File | null) => void;
   isLoading: boolean;
   onLoadSample?: () => void;
@@ -20,10 +15,6 @@ interface UploadStepProps {
 
 export const UploadStep: React.FC<UploadStepProps> = ({
   language,
-  fonts,
-  targetFont,
-  onTargetFontChange,
-  onFontAdded,
   onSubmit,
   isLoading,
 }) => {
@@ -68,19 +59,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
         </p>
       </div>
 
-      {/* Target Font Selector */}
-      {!isLoading && (
-        <FontSelector
-          fonts={fonts}
-          selectedFont={targetFont}
-          onChange={onTargetFontChange}
-          onFontAdded={onFontAdded}
-          language={language}
-          className="shrink-0"
-        />
-      )}
-
-      <div className="w-full flex-1 max-h-[380px] min-h-[190px] flex flex-col">
+      <div className="w-full flex-1 max-h-[420px] min-h-[220px] flex flex-col">
         {/* Single Document Upload Zone */}
         <div className="flex flex-col h-full">
           <div

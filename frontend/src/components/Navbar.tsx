@@ -1,9 +1,14 @@
 import { BookOpen, FileText, Globe } from 'lucide-react';
-import type { Language } from '../types';
+import type { FontOption, Language } from '../types';
 import { translations } from '../i18n/translations';
+import { FontSelector } from './FontSelector';
 
 interface NavbarProps {
   language: Language;
+  fonts?: FontOption[];
+  selectedFont?: string;
+  onTargetFontChange?: (font: string) => void;
+  onFontAdded?: (newFont: FontOption) => void;
   onLanguageToggle: () => void;
   onLogoClick?: () => void;
   onOpenDictionary?: () => void;
@@ -12,6 +17,10 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({
   language,
+  fonts,
+  selectedFont,
+  onTargetFontChange,
+  onFontAdded,
   onLanguageToggle,
   onLogoClick,
   onOpenDictionary,
@@ -38,6 +47,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Actions */}
         <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Target Font Quick Selector */}
+          {fonts && selectedFont && onTargetFontChange && (
+            <FontSelector
+              fonts={fonts}
+              selectedFont={selectedFont}
+              onChange={onTargetFontChange}
+              onFontAdded={onFontAdded}
+              language={language}
+              compact
+            />
+          )}
+
           {/* Custom Dictionary Button */}
           {onOpenDictionary && (
             <button
