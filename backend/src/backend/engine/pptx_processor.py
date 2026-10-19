@@ -16,15 +16,80 @@ from .dictionary import restore_khmer_text, sanitize_khmer_coeng
 
 logger = logging.getLogger(__name__)
 
-# Standard recommended Khmer fonts
+import os
+import subprocess
+
+# Standard recommended Khmer fonts with system detection
 RECOMMENDED_KHMER_FONTS = [
-    {"name": "Khmer OS Battambang", "category": "Administrative / Clean Sans", "default": True},
-    {"name": "Kantumruy Pro", "category": "Modern Sans (Google Font)", "default": False},
-    {"name": "Khmer OS Siemreap", "category": "Readable Body Font", "default": False},
-    {"name": "Hanuman", "category": "Traditional Serif (Google Font)", "default": False},
-    {"name": "Khmer OS Muol Light", "category": "Headline / Formal Header", "default": False},
-    {"name": "Koh Santepheap", "category": "Contemporary Display", "default": False},
+    {"name": "Khmer OS Battambang", "category": "Administrative / Clean Sans", "key": "battambang", "default": True},
+    {"name": "Khmer OS Siemreap", "category": "Readable Body Font (Standard)", "key": "siemreap", "default": False},
+    {"name": "DaunPenh", "category": "Windows Native (Pre-installed)", "key": "daunpenh", "default": False},
+    {"name": "Khmer UI", "category": "Windows UI Native", "key": "khmerui", "default": False},
+    {"name": "Kantumruy Pro", "category": "Modern Sans (Google Font)", "key": "kantumruy", "default": False},
+    {"name": "Hanuman", "category": "Traditional Serif (Google Font)", "key": "hanuman", "default": False},
+    {"name": "Koh Santepheap", "category": "Contemporary Display", "key": "santepheap", "default": False},
+    {"name": "Khmer OS Muol Light", "category": "Headline / Formal Header", "key": "muollight", "default": False},
+    {"name": "Khmer OS Muol", "category": "Heavy Title / Calligraphy", "key": "muol", "default": False},
+    {"name": "Noto Sans Khmer", "category": "Google Standard Sans", "key": "notosanskhmer", "default": False},
 ]
+
+
+def get_installed_system_fonts() -> set:
+    """Discovers installed system font families on Windows and Linux."""
+    installed = set()
+    if os.name == "nt":
+        win_fonts_dir = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "Fonts")
+        if os.path.exists(win_fonts_dir):
+            for fname in os.listdir(win_fonts_dir):
+                installed.add(os.path.splitext(fname)[0].lower().replace(" ", "").replace("_", "").replace("-", ""))
+    else:
+        try:
+            out = subprocess.check_output(["fc-list", ":family"], text=True, stderr=subprocess.DEVNULL)
+            for line in out.splitlines():
+                for f in line.split(","):
+                    installed.add(f.strip().lower().replace(" ", "").replace("_", "").replace("-", ""))
+        except Exception:
+            pass
+    return installed
+
+
+def get_font_options() -> List[Dict]:
+    """Returns the list of recommended Khmer fonts annotated with real system installation status and smart default."""
+    installed = get_installed_system_fonts()
+    result = []
+    default_assigned = False
+
+    for item in RECOMMENDED_KHMER_FONTS:
+        key = item["key"]
+        is_inst = any(key in inst for inst in installed) if installed else False
+        result.append({
+            "name": item["name"],
+            "category": item["category"],
+            "default": False,
+            "installed": is_inst
+        })
+
+    # Pick smart default:
+    # 1. If Khmer OS Battambang is installed, choose it
+    for opt in result:
+        if opt["name"] == "Khmer OS Battambang" and opt["installed"]:
+            opt["default"] = True
+            default_assigned = True
+            break
+
+    # 2. On Windows, if Battambang isn't installed but DaunPenh is installed, default to DaunPenh
+    if not default_assigned and os.name == "nt":
+        for opt in result:
+            if opt["name"] == "DaunPenh" and opt["installed"]:
+                opt["default"] = True
+                default_assigned = True
+                break
+
+    # 3. Otherwise default to first font (Khmer OS Battambang)
+    if not default_assigned and result:
+        result[0]["default"] = True
+
+    return result
 
 
 def set_run_font_comprehensive(run, font_name: str):
@@ -292,7 +357,8 @@ def apply_replacements_and_fonts(
                                 _update_paragraph(p)
                 return
             if shape.has_text_frame:
-                shape.text_frame.word_wrap = True
+                if shape.text_frame.word_wrap is not False:
+                    shape.text_frame.word_wrap = True
                 for p in shape.text_frame.paragraphs:
                     _update_paragraph(p)
 

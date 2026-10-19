@@ -12,6 +12,7 @@ import type { FontOption, Language, ProcessResponse, ReplacementItem } from '../
 import { translations } from '../i18n/translations';
 import { SlideComparison } from './SlideComparison';
 import { ReviewTable } from './ReviewTable';
+import { FontSelector } from './FontSelector';
 
 interface PreviewStepProps {
   data: ProcessResponse;
@@ -180,20 +181,14 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
         {/* Center / Right: Target Font Selector & View Switcher */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Target Font Quick Picker */}
-          <div className="flex items-center space-x-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-xs">
-            <span className="text-slate-400 font-medium font-khmer text-[11px]">{t.stats_font}:</span>
-            <select
-              value={targetFont}
-              onChange={(e) => onTargetFontChange(e.target.value)}
-              className="font-bold text-slate-800 bg-transparent focus:outline-hidden cursor-pointer text-xs"
-            >
-              {fonts.map((f) => (
-                <option key={f.name} value={f.name}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FontSelector
+            fonts={fonts}
+            selectedFont={targetFont}
+            onChange={onTargetFontChange}
+            language={language}
+            compact
+            label={t.stats_font}
+          />
 
           {/* View Tab Buttons */}
           <div className="inline-flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">

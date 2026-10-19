@@ -6,12 +6,15 @@ import {
   Edit3,
   FileText,
 } from 'lucide-react';
-import type { Language } from '../types';
+import type { FontOption, Language } from '../types';
 import { translations } from '../i18n/translations';
+import { FontSelector } from './FontSelector';
 
 interface DownloadStepProps {
   language: Language;
+  fonts?: FontOption[];
   targetFont: string;
+  onTargetFontChange?: (font: string) => void;
   totalSlides: number;
   totalFixed: number;
   documentType?: 'pptx' | 'docx' | 'pdf';
@@ -25,7 +28,9 @@ interface DownloadStepProps {
 
 export const DownloadStep: React.FC<DownloadStepProps> = ({
   language,
+  fonts = [],
   targetFont,
+  onTargetFontChange,
   totalSlides,
   totalFixed,
   documentType = 'pptx',
@@ -76,7 +81,7 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
       </p>
 
       {/* Clean Stats Pill */}
-      <div className="bg-white rounded-xl py-2 px-5 border border-slate-200/80 shadow-xs flex items-center justify-center gap-4 text-xs font-khmer mb-6">
+      <div className="bg-white rounded-xl py-2 px-5 border border-slate-200/80 shadow-xs flex items-center justify-center gap-4 text-xs font-khmer mb-4">
         <span className="text-slate-600 font-semibold">
           <strong className="text-slate-900 font-bold text-sm">{totalSlides}</strong> {getUnitLabel()}
         </span>
@@ -84,11 +89,20 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
         <span className="text-emerald-600 font-semibold">
           <strong className="text-emerald-700 font-bold text-sm">{totalFixed}</strong> {t.download_runs_updated}
         </span>
-        <span className="text-slate-300">•</span>
-        <span className="text-slate-500 font-medium truncate max-w-[140px]" title={targetFont}>
-          {targetFont}
-        </span>
       </div>
+
+      {/* Target Font Selector */}
+      {onTargetFontChange && fonts.length > 0 && (
+        <div className="w-full max-w-xs mb-4">
+          <FontSelector
+            fonts={fonts}
+            selectedFont={targetFont}
+            onChange={onTargetFontChange}
+            language={language}
+            label={language === 'km' ? 'ពុម្ពអក្សរមុនទាញយក' : 'Font for Download'}
+          />
+        </div>
+      )}
 
       {/* Main Download Button */}
       <div className="w-full max-w-xs space-y-2 mb-5">

@@ -39,6 +39,7 @@ from .engine.text_aligner import align_slide_with_pdf
 from .engine.gemini_restorer import restore_with_gemini
 from .engine.pptx_processor import (
     RECOMMENDED_KHMER_FONTS,
+    get_font_options,
     apply_replacements_and_fonts,
     extract_presentation_runs,
 )
@@ -130,7 +131,7 @@ def health_check():
 @app.get("/api/fonts", response_model=List[FontOption])
 @app.get("/fonts", response_model=List[FontOption])
 def get_fonts():
-    return [FontOption(**f) for f in RECOMMENDED_KHMER_FONTS]
+    return [FontOption(**f) for f in get_font_options()]
 
 
 class CustomDictEntryRequest(BaseModel):

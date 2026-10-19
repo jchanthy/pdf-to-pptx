@@ -56,3 +56,4 @@ class FontOption(BaseModel):
     name: str
     category: str
     default: bool = False
+    installed: Optional[bool] = None

@@ -412,10 +412,11 @@ def convert_pdf_to_pptx(
                     full_slide_corrected.append(fixed_val)
                     cell.text = fixed_val
                     for p in cell.text_frame.paragraphs:
-                        p.font.name = target_font
                         p.font.size = Pt(10.5 if num_rows > 6 else 12)
                         if r_i == 0:
                             p.font.bold = True
+                        for r in p.runs:
+                            set_run_font_comprehensive(r, target_font)
                     if raw_val != fixed_val:
                         rep_item = ReplacementItem(
                             id=str(uuid.uuid4())[:8],
@@ -481,12 +482,16 @@ def convert_pdf_to_pptx(
                 max_x = max(b["bbox"][2] for b in block_group)
                 max_y = max(b["bbox"][3] for b in block_group)
                 
-                bw = max(max_x - min_x + 25, 30)
+                total_lines = sum(len(b.get("lines", [])) for b in block_group)
+                is_single_line = (total_lines <= 1) or (c_type == "title")
+                
+                # Give generous width headroom so font metric variations never prematurely wrap text
+                bw = min(page_width - min_x - 10, max(max_x - min_x + (80 if is_single_line else 35), 40))
                 bh = max(max_y - min_y + 15, 20)
                 
                 tx_box = slide.shapes.add_textbox(Pt(min_x), Pt(min_y), Pt(bw), Pt(bh))
                 tf = tx_box.text_frame
-                tf.word_wrap = True
+                tf.word_wrap = not is_single_line
                 tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
                 
                 first_p = True
@@ -608,7 +613,7 @@ def convert_pdf_to_pptx(
                         
                     tx_box = slide.shapes.add_textbox(bx, by, bw, bh)
                     tf = tx_box.text_frame
-                    tf.word_wrap = True
+                    tf.word_wrap = False
                     tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
                     
                     p = tf.paragraphs[0]

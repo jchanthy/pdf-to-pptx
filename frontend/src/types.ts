@@ -45,6 +45,7 @@ export interface FontOption {
   name: string;
   category: string;
   default: boolean;
+  installed?: boolean;
 }
 
 export interface ProcessOptions {
