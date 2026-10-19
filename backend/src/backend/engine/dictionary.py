@@ -2191,17 +2191,19 @@ def repair_khmer_heuristics(text: str) -> Tuple[str, List[Dict[str, str]]]:
 
 
 import os
+import tempfile
 
 CUSTOM_DICT_FILE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "custom_dictionary.txt")
 )
+FALLBACK_CUSTOM_DICT = os.path.join(tempfile.gettempdir(), "custom_dictionary.txt")
 _CUSTOM_FILE_MTIME: float = 0.0
 _CUSTOM_FILE_DICT: Dict[str, str] = {}
 
 
 def get_user_custom_dictionary() -> Dict[str, str]:
     """
-    Hot-reloads custom_dictionary.txt from the project root whenever modified.
+    Hot-reloads custom_dictionary.txt from the project root or temp directory whenever modified.
     Supports formats:
       - wrong = right
       - wrong -> right
@@ -2209,16 +2211,17 @@ def get_user_custom_dictionary() -> Dict[str, str]:
       - single valid word on its own line (registered into khmer_validator.words)
     """
     global _CUSTOM_FILE_MTIME, _CUSTOM_FILE_DICT, _CACHED_DICT_REGEX
+    target_file = CUSTOM_DICT_FILE if os.path.exists(CUSTOM_DICT_FILE) else (FALLBACK_CUSTOM_DICT if os.path.exists(FALLBACK_CUSTOM_DICT) else None)
+    if not target_file:
+        return _CUSTOM_FILE_DICT
     try:
-        if not os.path.exists(CUSTOM_DICT_FILE):
-            return _CUSTOM_FILE_DICT
-        mtime = os.path.getmtime(CUSTOM_DICT_FILE)
+        mtime = os.path.getmtime(target_file)
         if mtime == _CUSTOM_FILE_MTIME:
             return _CUSTOM_FILE_DICT
         _CUSTOM_FILE_MTIME = mtime
         new_dict: Dict[str, str] = {}
         valid_words: List[str] = []
-        with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
+        with open(target_file, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#"):

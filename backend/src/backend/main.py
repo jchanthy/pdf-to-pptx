@@ -67,11 +67,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BASE_TEMP_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "temp_sessions")
-os.makedirs(BASE_TEMP_DIR, exist_ok=True)
+import tempfile
+import json
 
-# Session metadata storage
+BASE_TEMP_DIR = os.environ.get("TEMP_DIR") or os.path.join(tempfile.gettempdir(), "khmer_docfixer_sessions")
+try:
+    os.makedirs(BASE_TEMP_DIR, exist_ok=True)
+except Exception as e:
+    logger.warning(f"Could not initialize BASE_TEMP_DIR at {BASE_TEMP_DIR}: {e}")
+
+# Session metadata storage with disk fallback for serverless container reloads
 session_registry: Dict[str, Dict] = {}
+
+
+def save_session_meta(session_id: str, meta: dict):
+    """Saves session metadata in-memory and persists meta.json to disk."""
+    session_registry[session_id] = meta
+    try:
+        session_dir = os.path.join(BASE_TEMP_DIR, session_id)
+        os.makedirs(session_dir, exist_ok=True)
+        meta_file = os.path.join(session_dir, "meta.json")
+        with open(meta_file, "w", encoding="utf-8") as f:
+            json.dump(meta, f)
+    except Exception as e:
+        logger.warning(f"Could not persist session meta for {session_id}: {e}")
+
+
+def get_session_meta(session_id: str) -> Optional[dict]:
+    """Retrieves session metadata from memory or disk cache."""
+    if session_id in session_registry:
+        return session_registry[session_id]
+    meta_file = os.path.join(BASE_TEMP_DIR, session_id, "meta.json")
+    if os.path.exists(meta_file):
+        try:
+            with open(meta_file, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+                session_registry[session_id] = meta
+                return meta
+        except Exception as e:
+            logger.warning(f"Failed to read session meta for {session_id}: {e}")
+    return None
 
 
 def cleanup_session_dir(session_id: str):
@@ -87,11 +122,13 @@ def cleanup_session_dir(session_id: str):
 
 
 @app.get("/api/health")
+@app.get("/health")
 def health_check():
     return {"status": "ok", "app": "Khmer DocFixer: PDF-to-PPTX Unicode Restorer"}
 
 
 @app.get("/api/fonts", response_model=List[FontOption])
+@app.get("/fonts", response_model=List[FontOption])
 def get_fonts():
     return [FontOption(**f) for f in RECOMMENDED_KHMER_FONTS]
 
@@ -104,53 +141,76 @@ class CustomDictEntryRequest(BaseModel):
 
 
 @app.get("/api/custom-dictionary")
+@app.get("/custom-dictionary")
 def get_custom_dictionary():
     """Returns the user's custom dictionary entries and raw file content."""
     entries_dict = get_user_custom_dictionary()
     raw_content = ""
-    if os.path.exists(CUSTOM_DICT_FILE):
-        with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
-            raw_content = f.read()
+    target_file = CUSTOM_DICT_FILE
+    fallback_file = os.path.join(tempfile.gettempdir(), "custom_dictionary.txt")
+    if os.path.exists(target_file):
+        try:
+            with open(target_file, "r", encoding="utf-8") as f:
+                raw_content = f.read()
+        except Exception:
+            pass
+    elif os.path.exists(fallback_file):
+        try:
+            with open(fallback_file, "r", encoding="utf-8") as f:
+                raw_content = f.read()
+        except Exception:
+            pass
     entries = [{"wrong": k, "right": v} for k, v in entries_dict.items()]
     return {
         "entries": entries,
         "count": len(entries),
         "raw_content": raw_content,
-        "file_path": CUSTOM_DICT_FILE,
+        "file_path": target_file,
     }
 
 
 @app.post("/api/custom-dictionary")
+@app.post("/custom-dictionary")
 def update_custom_dictionary(payload: CustomDictEntryRequest):
     """Adds a new wrong -> right pair, appends bulk lines, or saves the full custom_dictionary.txt."""
-    os.makedirs(os.path.dirname(CUSTOM_DICT_FILE), exist_ok=True)
-    if payload.replace_all and payload.raw_lines is not None:
-        with open(CUSTOM_DICT_FILE, "w", encoding="utf-8") as f:
-            f.write(payload.raw_lines.strip() + "\n")
-    else:
-        lines_to_append = []
-        if payload.wrong and payload.right:
-            lines_to_append.append(f"{payload.wrong.strip()} = {payload.right.strip()}")
-        if payload.raw_lines:
-            for line in payload.raw_lines.splitlines():
-                if line.strip():
-                    lines_to_append.append(line.strip())
-        if lines_to_append:
-            existing = ""
-            if os.path.exists(CUSTOM_DICT_FILE):
-                with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
-                    existing = f.read()
-            with open(CUSTOM_DICT_FILE, "a", encoding="utf-8") as f:
-                if existing and not existing.endswith("\n"):
-                    f.write("\n")
-                for ln in lines_to_append:
-                    f.write(ln + "\n")
+    lines_to_append = []
+    if payload.wrong and payload.right:
+        lines_to_append.append(f"{payload.wrong.strip()} = {payload.right.strip()}")
+    if payload.raw_lines and not payload.replace_all:
+        for line in payload.raw_lines.splitlines():
+            if line.strip():
+                lines_to_append.append(line.strip())
+
+    for target_path in [CUSTOM_DICT_FILE, os.path.join(tempfile.gettempdir(), "custom_dictionary.txt")]:
+        try:
+            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+            if payload.replace_all and payload.raw_lines is not None:
+                with open(target_path, "w", encoding="utf-8") as f:
+                    f.write(payload.raw_lines.strip() + "\n")
+            elif lines_to_append:
+                existing = ""
+                if os.path.exists(target_path):
+                    with open(target_path, "r", encoding="utf-8") as f:
+                        existing = f.read()
+                with open(target_path, "a", encoding="utf-8") as f:
+                    if existing and not existing.endswith("\n"):
+                        f.write("\n")
+                    for ln in lines_to_append:
+                        f.write(ln + "\n")
+            break
+        except (OSError, PermissionError):
+            continue
 
     entries_dict = get_user_custom_dictionary()
     raw_content = ""
-    if os.path.exists(CUSTOM_DICT_FILE):
-        with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
-            raw_content = f.read()
+    for check_path in [CUSTOM_DICT_FILE, os.path.join(tempfile.gettempdir(), "custom_dictionary.txt")]:
+        if os.path.exists(check_path):
+            try:
+                with open(check_path, "r", encoding="utf-8") as f:
+                    raw_content = f.read()
+                break
+            except Exception:
+                pass
     entries = [{"wrong": k, "right": v} for k, v in entries_dict.items()]
     return {
         "status": "ok",
@@ -161,6 +221,7 @@ def update_custom_dictionary(payload: CustomDictEntryRequest):
 
 
 @app.post("/api/custom-dictionary/upload")
+@app.post("/custom-dictionary/upload")
 async def upload_custom_dictionary_file(file: UploadFile = File(...)):
     """Uploads a .txt file of custom dictionary entries and appends them to custom_dictionary.txt."""
     content_bytes = await file.read()
@@ -171,21 +232,32 @@ async def upload_custom_dictionary_file(file: UploadFile = File(...)):
 
     lines = [ln.strip() for ln in text_content.splitlines() if ln.strip() and not ln.strip().startswith("#")]
     if lines:
-        existing = ""
-        if os.path.exists(CUSTOM_DICT_FILE):
-            with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
-                existing = f.read()
-        with open(CUSTOM_DICT_FILE, "a", encoding="utf-8") as f:
-            if existing and not existing.endswith("\n"):
-                f.write("\n")
-            for ln in lines:
-                f.write(ln + "\n")
+        for target_path in [CUSTOM_DICT_FILE, os.path.join(tempfile.gettempdir(), "custom_dictionary.txt")]:
+            try:
+                os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                existing = ""
+                if os.path.exists(target_path):
+                    with open(target_path, "r", encoding="utf-8") as f:
+                        existing = f.read()
+                with open(target_path, "a", encoding="utf-8") as f:
+                    if existing and not existing.endswith("\n"):
+                        f.write("\n")
+                    for ln in lines:
+                        f.write(ln + "\n")
+                break
+            except (OSError, PermissionError):
+                continue
 
     entries_dict = get_user_custom_dictionary()
     raw_content = ""
-    if os.path.exists(CUSTOM_DICT_FILE):
-        with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
-            raw_content = f.read()
+    for check_path in [CUSTOM_DICT_FILE, os.path.join(tempfile.gettempdir(), "custom_dictionary.txt")]:
+        if os.path.exists(check_path):
+            try:
+                with open(check_path, "r", encoding="utf-8") as f:
+                    raw_content = f.read()
+                break
+            except Exception:
+                pass
     entries = [{"wrong": k, "right": v} for k, v in entries_dict.items()]
     return {
         "status": "ok",
@@ -406,6 +478,7 @@ def _process_presentation_internal(
 
 
 @app.post("/api/upload", response_model=ProcessResponse)
+@app.post("/upload", response_model=ProcessResponse)
 async def upload_and_process(
     file: Optional[UploadFile] = File(None),
     pptx_file: Optional[UploadFile] = File(None),
@@ -460,7 +533,7 @@ async def upload_and_process(
             pdf_content = await pdf_file.read()
             f.write(pdf_content)
 
-    session_registry[session_id] = {
+    session_meta = {
         "doc_path": doc_save_path,
         "pptx_path": doc_save_path if not (is_docx or is_pdf) else None,
         "docx_path": doc_save_path if is_docx else None,
@@ -471,6 +544,7 @@ async def upload_and_process(
         "gemini_api_key": gemini_api_key,
         "document_type": doc_type
     }
+    save_session_meta(session_id, session_meta)
 
     try:
         if is_pdf:
@@ -483,7 +557,8 @@ async def upload_and_process(
                 target_font=target_font,
                 force_ocr=force_ocr
             )
-            session_registry[session_id]["pptx_path"] = converted_path
+            session_meta["pptx_path"] = converted_path
+            save_session_meta(session_id, session_meta)
             return ProcessResponse(
                 session_id=session_id,
                 total_slides=len(slides_diff),
@@ -531,6 +606,7 @@ async def upload_and_process(
 
 
 @app.get("/api/sample", response_model=ProcessResponse)
+@app.get("/sample", response_model=ProcessResponse)
 def load_sample():
     """
     Generates realistic test files (corrupted PPTX and clean PDF)
@@ -542,7 +618,7 @@ def load_sample():
 
     pptx_path, pdf_path = generate_sample_files(session_dir)
 
-    session_registry[session_id] = {
+    sample_meta = {
         "doc_path": pptx_path,
         "pptx_path": pptx_path,
         "docx_path": None,
@@ -553,6 +629,7 @@ def load_sample():
         "gemini_api_key": None,
         "document_type": "pptx"
     }
+    save_session_meta(session_id, sample_meta)
 
     response = _process_presentation_internal(
         session_id=session_id,
@@ -567,16 +644,17 @@ def load_sample():
 
 
 @app.post("/api/apply-and-download")
+@app.post("/apply-and-download")
 def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundTasks):
     """
     Applies accepted replacements to the PPTX or DOCX file, sets target font,
     and returns the fixed file as a download stream.
     """
     session_id = payload.session_id
-    if session_id not in session_registry:
+    meta = get_session_meta(session_id)
+    if not meta:
         raise HTTPException(status_code=404, detail="Session expired or not found. Please upload again.")
 
-    meta = session_registry[session_id]
     original_filename = meta["original_filename"]
     doc_type = meta.get("document_type", "pptx")
     
@@ -700,6 +778,7 @@ def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundT
 
 
 @app.delete("/api/cleanup/{session_id}")
+@app.delete("/cleanup/{session_id}")
 def cleanup(session_id: str):
     """Manual cleanup endpoint."""
     cleanup_session_dir(session_id)

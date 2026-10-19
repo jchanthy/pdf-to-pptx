@@ -45,8 +45,23 @@ export async function uploadAndProcess(
   });
 
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.detail || `Upload failed with status: ${res.status}`);
+    if (res.status === 413) {
+      throw new Error(
+        'ឯកសារមានទំហំធំពេក (File is too large). If deployed on Vercel, serverless functions limit uploads to 4.5 MB. Please upload a smaller file or deploy on a container host (Render, Cloud Run, VPS).'
+      );
+    }
+    let errorDetail = '';
+    try {
+      const errorData = await res.json();
+      errorDetail = errorData.detail || JSON.stringify(errorData);
+    } catch {
+      try {
+        errorDetail = await res.text();
+      } catch {
+        errorDetail = '';
+      }
+    }
+    throw new Error(errorDetail || `Upload failed with status: ${res.status}`);
   }
 
   return await res.json();
