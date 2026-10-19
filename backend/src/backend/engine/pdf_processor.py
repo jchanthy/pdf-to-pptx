@@ -34,9 +34,18 @@ CANDIDATE_FONT_PATHS = [
 
 
 def resolve_khmer_font_path(target_font: str = "Khmer OS Battambang") -> Optional[str]:
-    """Finds a valid TrueType Khmer font file on the host system."""
+    """Finds a valid TrueType/OpenType Khmer font file on the host system."""
+    import tempfile
     target_clean = re.sub(r'[^a-zA-Z0-9]', '', target_font.lower())
     
+    # 0. Check custom uploaded fonts directory first
+    custom_dir = os.path.join(tempfile.gettempdir(), "khmer_docfixer_fonts")
+    if os.path.isdir(custom_dir):
+        for f in os.listdir(custom_dir):
+            f_clean = re.sub(r'[^a-zA-Z0-9]', '', f.lower())
+            if (target_clean in f_clean or f_clean in target_clean) and f.lower().endswith((".ttf", ".otf")):
+                return os.path.join(custom_dir, f)
+
     # Try exact or partial match first
     for path in CANDIDATE_FONT_PATHS:
         if os.path.exists(path):

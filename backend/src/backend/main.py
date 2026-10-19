@@ -153,51 +153,53 @@ async def upload_font(font_file: UploadFile = File(...)):
     if not content:
         raise HTTPException(status_code=400, detail="Font file is empty.")
 
-    # Determine destination directory
-    if os.name == "nt":
-        user_fonts_dir = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "Windows", "Fonts")
-        if not os.path.exists(user_fonts_dir):
-            user_fonts_dir = os.path.join(tempfile.gettempdir(), "fonts")
-    else:
-        user_fonts_dir = os.path.expanduser("~/.local/share/fonts")
-        
-    os.makedirs(user_fonts_dir, exist_ok=True)
-    dest_path = os.path.join(user_fonts_dir, font_file.filename)
-    
-    with open(dest_path, "wb") as f:
-        f.write(content)
-
-    # Inspect font name with PyMuPDF
     try:
-        f_obj = pymupdf.Font(fontfile=dest_path)
-        raw_name = f_obj.name
-        for suffix in ["-Regular", " Regular", "-Bold", " Bold", "-Italic", " Italic"]:
-            if raw_name.endswith(suffix):
-                raw_name = raw_name[:-len(suffix)]
-        font_name = raw_name.strip()
-    except Exception as e:
-        font_name = os.path.splitext(font_file.filename)[0]
+        # Save to dedicated custom fonts directory with full user write permissions
+        user_fonts_dir = os.path.join(tempfile.gettempdir(), "khmer_docfixer_fonts")
+        os.makedirs(user_fonts_dir, exist_ok=True)
+        dest_path = os.path.join(user_fonts_dir, font_file.filename)
+        
+        with open(dest_path, "wb") as f:
+            f.write(content)
 
-    # Register in OS
-    if os.name == "nt":
+        # Inspect font name with PyMuPDF
         try:
-            import ctypes
-            gdi32 = ctypes.WinDLL("gdi32")
-            gdi32.AddFontResourceW(dest_path)
-            user32 = ctypes.WinDLL("user32")
-            user32.SendMessageW(0xFFFF, 0x001D, 0, 0)
+            f_obj = pymupdf.Font(fontfile=dest_path)
+            raw_name = f_obj.name
+            for suffix in ["-Regular", " Regular", "-Bold", " Bold", "-Italic", " Italic", "-Medium", " Medium", "-Light", " Light"]:
+                if raw_name.endswith(suffix):
+                    raw_name = raw_name[:-len(suffix)]
+            font_name = raw_name.strip()
         except Exception as e:
-            logger.warning(f"Could not register font in Windows GDI: {e}")
-    else:
-        try:
-            import subprocess
-            subprocess.run(["fc-cache", "-f"], check=False)
-        except Exception:
-            pass
+            font_name = os.path.splitext(font_file.filename)[0]
 
-    font_entry = register_custom_font(font_name)
-    logger.info(f"Successfully uploaded and registered custom font: {font_name} from {font_file.filename}")
-    return FontOption(**font_entry)
+        # Register in OS
+        if os.name == "nt":
+            try:
+                import ctypes
+                gdi32 = ctypes.WinDLL("gdi32")
+                gdi32.AddFontResourceW(dest_path)
+                gdi32.AddFontResourceExW(dest_path, 0x10, 0)
+                user32 = ctypes.WinDLL("user32")
+                user32.SendMessageW(0xFFFF, 0x001D, 0, 0)
+            except Exception as e:
+                logger.warning(f"Could not register font in Windows GDI: {e}")
+        else:
+            try:
+                linux_fonts_dir = os.path.expanduser("~/.local/share/fonts")
+                os.makedirs(linux_fonts_dir, exist_ok=True)
+                shutil.copy(dest_path, os.path.join(linux_fonts_dir, font_file.filename))
+                import subprocess
+                subprocess.run(["fc-cache", "-f"], check=False)
+            except Exception:
+                pass
+
+        font_entry = register_custom_font(font_name)
+        logger.info(f"Successfully uploaded and registered custom font: {font_name} from {font_file.filename}")
+        return FontOption(**font_entry)
+    except Exception as e:
+        logger.exception("Error processing uploaded font file")
+        raise HTTPException(status_code=500, detail=f"Failed to process and install font: {str(e)}")
 
 
 class CustomDictEntryRequest(BaseModel):

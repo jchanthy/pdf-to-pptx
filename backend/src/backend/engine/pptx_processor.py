@@ -35,7 +35,7 @@ RECOMMENDED_KHMER_FONTS = [
 
 
 def get_installed_system_fonts() -> set:
-    """Discovers installed system font families on Windows and Linux."""
+    """Discovers installed system font families on Windows and Linux, including custom uploaded fonts."""
     installed = set()
     if os.name == "nt":
         win_fonts_dir = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "Fonts")
@@ -50,6 +50,13 @@ def get_installed_system_fonts() -> set:
                     installed.add(f.strip().lower().replace(" ", "").replace("_", "").replace("-", ""))
         except Exception:
             pass
+
+    # Also check custom uploaded fonts directory
+    custom_dir = os.path.join(tempfile.gettempdir(), "khmer_docfixer_fonts")
+    if os.path.exists(custom_dir):
+        for fname in os.listdir(custom_dir):
+            installed.add(os.path.splitext(fname)[0].lower().replace(" ", "").replace("_", "").replace("-", ""))
+
     return installed
 
 
