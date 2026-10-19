@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar';
 import { UploadStep } from './components/UploadStep';
 import { PreviewStep } from './components/PreviewStep';
 import { DownloadStep } from './components/DownloadStep';
+import { CustomDictionaryModal } from './components/CustomDictionaryModal';
 import type {
   FontOption,
   Language,
@@ -32,6 +33,7 @@ export function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [savedReplacements, setSavedReplacements] = useState<ReplacementItem[]>([]);
   const [resetKey, setResetKey] = useState<number>(0);
+  const [isDictOpen, setIsDictOpen] = useState<boolean>(false);
 
   const t = translations[language];
 
@@ -153,6 +155,28 @@ export function App() {
     }
   };
 
+  const handleDownloadAsPdf = async () => {
+    if (!processResult) return;
+    setIsLoading(true);
+    try {
+      const blob = await applyFixesAndDownload(
+        processResult.session_id,
+        options.target_font,
+        savedReplacements,
+        'pdf'
+      );
+      const baseName = processResult.filename
+        ? processResult.filename.replace(/\.[^/.]+$/, '')
+        : 'presentation';
+      triggerFileDownload(blob, `${baseName}_fixed.pdf`);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage(err.message || 'Failed to download PDF document');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleStartOver = () => {
     setCurrentStep(1);
     setProcessResult(null);
@@ -169,7 +193,15 @@ export function App() {
         language={language}
         onLanguageToggle={handleLanguageToggle}
         onLogoClick={handleStartOver}
+        onOpenDictionary={() => setIsDictOpen(true)}
         isLoading={isLoading}
+      />
+
+      {/* Custom Dictionary Modal */}
+      <CustomDictionaryModal
+        isOpen={isDictOpen}
+        onClose={() => setIsDictOpen(false)}
+        language={language}
       />
 
       {/* Main Container */}
@@ -229,6 +261,7 @@ export function App() {
             documentType={processResult.document_type as any}
             onDownloadAgain={handleDownloadAgain}
             onDownloadAsPptx={processResult.document_type === 'pdf' ? handleDownloadAsPptx : undefined}
+            onDownloadAsPdf={processResult.document_type !== 'pdf' ? handleDownloadAsPdf : undefined}
             onStartOver={handleStartOver}
             onPreviewEdit={() => setCurrentStep(2)}
             isLoading={isLoading}

@@ -466,7 +466,6 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "គេលប្តវ្មួយ": "គេប្រើវិធីមួយ",
     "លប្តវ្មួយ": "ប្រើវិធីមួយ",
     "គេលប្ត": "គេប្រើ",
-    "លប្ត": "ប្រើ",
     "វ្មួយ": "វិធីមួយ",
     "ការចងតអលបង្ហាញ": "ការចង្អុលបង្ហាញ",
     "ចងតអលបង្ហាញ": "ចង្អុលបង្ហាញ",
@@ -546,8 +545,6 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "នន្ព័ត៌មាន": "នៃព័ត៌មាន",
     "នន្ឯកសារ": "នៃឯកសារ",
     "ននឯកសារ": "នៃឯកសារ",
-    "នន្": "នៃ",
-    "នន": "នៃ",
     "ពិតប្បាកដចទ": "ពិតប្រាកដទេ",
     "ពិតប្បាកដ": "ពិតប្រាកដ",
     "ប្បាកដចទ": "ប្រាកដទេ",
@@ -582,6 +579,8 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "នៃែកបស្ន្": "ផ្នែកបន្ថែម",
     "នៃែក": "ផ្នែក",
     "បស្ន្ថ្មី": "បន្ថែមថ្មី",
+    "បស្ន្ថម្": "បន្ថែម",
+    "បស្ន្ថម": "បន្ថែម",
     "បស្ន្": "បន្ថែម",
     "បស្នែម": "បន្ថែម",
     "បន្ថែមី": "បន្ថែមថ្មី",
@@ -883,7 +882,8 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "អក្ចីន": "ច្រើន",
     "បូតតង": "ប៊ូតុង",
     "កាល យជា": "ក្លាយជា",
-    "វកម្ម": "សកម្ម",
+    "ជាវកម្ម": "ជាសកម្ម",
+    " វកម្ម": " សកម្ម",
     "ម្តខងារ": "មុខងារ",
     "មនក្សាប់": "មានស្រាប់",
     "ក្សាប់": "ស្រាប់",
@@ -1189,7 +1189,9 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "ដោះសា": "ដោះស្រាយ",
     "ប.គ.ព្": "ប.គ.ព",
     "នេំរបស់": "ផ្សំរបស់",
-    "នេំ": "ផ្សំ",
+    "A័ត៌មនេំAី": "ព័ត៌មានអំពី",
+    "កំតAយទ័រ": "កុំព្យូទ័រ",
+    "កំAយូទ័រ": "កុំព្យូទ័រ",
     "បដីមបី": "ដើម្បី",
     "បបងកីត": "បង្កើត",
     "បូរ": "ប្តូរ",
@@ -1545,14 +1547,212 @@ KHMER_CORRUPTION_DICTIONARY: Dict[str, str] = {
     "ឃ្មម": "គ្មាន",
     "បាពើ": "ព្រមពី",
     "នកូដព្យាបាទ": "នៃកូដព្យាបាទ",
-    "នកូដ": "នៃកូដ",
-    "នការ": "នៃការ",
+    " នកូដ": " នៃកូដ",
+    " នការ": " នៃការ",
+    # Lesson 05 Malware & Security Presentation Terms:
+    "នងាតមានវិះទាបបៃតង": "ព័ត៌មានវិទ្យាបៃតង",
+    "A័ត្៌មានវិទាបបត្ង": "ព័ត៌មានវិទ្យាបៃតង",
+    "ព័តមានែិទាបបតង": "ព័ត៌មានវិទ្យាបៃតង",
+    "សពខភាព PិRព˘ត៌មាPែិទាបUតR": "សុខភាព និងព័ត៌មានវិទ្យាបៃតង",
+    "សតខភាA និងA័ត្៌មានវិទាបបត្ង": "សុខភាព និងព័ត៌មានវិទ្យាបៃតង",
+    "សតខភាA": "សុខភាព",
+    "សតខមាលភាA": "សុខុមាលភាព",
+    "សតវត្ិថភាA": "សុវត្ថិភាព",
+    "កម្មវិះធូីំលិច": "កម្មវិធីបំផ្លិចបំផ្លាញ",
+    "កម្មវិះធូីំ": "កម្មវិធី",
+    "តាបីម្ញើរ ចាប់ចេះលងខ្លួនវាមៅកុំព្យូទ័រមេង មុទិតា។": "ដើម្បីផ្ញើ ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត។",
+    "តាបីម្ញើរ ចាប់ចេះលងខ្លួនវាមៅកុំព្យូទ័រមេង មុទិតា": "ដើម្បីផ្ញើ ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត",
+    "តាបីម្ញើរ": "ដើម្បីផ្ញើ",
+    "ចាប់ចេះលង": "ចម្លង",
+    "ខ្លួនវាមៅ": "ខ្លួនវាទៅ",
+    "កុំព្យូទ័រមេង": "កុំព្យូទ័រផ្សេង",
+    "មេង មុទិតា": "ផ្សេងទៀត",
+    "មុទិតា": "ទៀត",
+    "មុទុតា": "ទៀត",
+    "របេលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីមបើកមគហទំព័រឱ្យេិន មានៃការយល់រំពេ។": "ប្រមូលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីបើកគេហទំព័រដោយមិនមានការយល់ព្រម។",
+    "របេលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីមបើកមគហទំព័រឱ្យេិន មានៃការយល់រំពេ": "ប្រមូលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីបើកគេហទំព័រដោយមិនមានការយល់ព្រម",
+    "របេលព័ត៌មានអ្នកប្រើ": "ប្រមូលព័ត៌មានអ្នកប្រើ",
+    "របេល": "ប្រមូល",
+    "កម្មវិធីមបើកមគហទំព័រ": "កម្មវិធីបើកគេហទំព័រ",
+    "មបើកមគហទំព័រ": "បើកគេហទំព័រ",
+    "ឱ្យេិន": "ដោយមិន",
+    "មានៃការយល់រំពេ": "មានការយល់ព្រម",
+    "ការយល់រំពេ": "ការយល់ព្រម",
+    "មានៃការ": "មានការ",
+    "មានៃ": "មាន",
+    "WORM មេមោគចេលRមោFខលួPឯR មោFមរUើUណ្តញñពំពូទទ˘fមដើេបីម្ញើf ចាU់ចេលRខលួPវាមៅñពំពូទទ˘fម្េR មទៀត។": "WORM មេរោគចម្លងដោយខ្លួនឯង ដោយប្រើបណ្តាញកុំព្យូទ័រដើម្បីផ្ញើ ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត។",
+    "WORM មេមោគចេលRមោFខលួPឯR មោFមរUើUណ្តញñពំពូទទ˘fមដើេបីម្ញើf ចាU់ចេលRខលួPវាមៅñពំពូទទ˘fម្េR មទៀត": "WORM មេរោគចម្លងដោយខ្លួនឯង ដោយប្រើបណ្តាញកុំព្យូទ័រដើម្បីផ្ញើ ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត",
+    "មេមោគចេលRមោFខលួPឯR": "មេរោគចម្លងដោយខ្លួនឯង",
+    "មោFមរUើUណ្តញñពំពូទទ˘fមដើេបីម្ញើf": "ដោយប្រើបណ្តាញកុំព្យូទ័រដើម្បីផ្ញើ",
+    "ចាU់ចេលRខលួPវាមៅñពំពូទទ˘fម្េR មទៀត": "ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត",
+    "មេមោគចេលR": "មេរោគចម្លង",
+    "ចេលR": "ចម្លង",
+    "ខលួPឯR": "ខ្លួនឯង",
+    "មោFមរUើ": "ដោយប្រើ",
+    "មរUើUណ្តញ": "ប្រើបណ្តាញ",
+    "Uណ្តញ": "បណ្តាញ",
+    "ñពំពូទទ˘f": "កុំព្យូទ័រ",
+    "មដើេបីម្ញើf": "ដើម្បីផ្ញើ",
+    "ម្ញើf": "ផ្ញើ",
+    "ចាU់ចេលR": "ចម្លង",
+    "ខលួPវាមៅ": "ខ្លួនវាទៅ",
+    "ម្េR មទៀត": "ផ្សេងទៀត",
+    "ម្េR": "ផ្សេង",
+    "TROJAN HORSE ñេមែិធីUំ្លិចUំផ្លញមោFវñលRមធវើជាñេមែិធីម្េRឬñេមែិធីមាP្លរUមោជP'។": "TROJAN HORSE កម្មវិធីបំផ្លិចបំផ្លាញដោយក្លែងធ្វើជាកម្មវិធីផ្សេង ឬកម្មវិធីមានប្រយោជន៍។",
+    "TROJAN HORSE ñេមែិធីUំ្លិចUំផ្លញមោFវñលRមធវើជាñេមែិធីម្េRឬñេមែិធីមាP្លរUមោជP'": "TROJAN HORSE កម្មវិធីបំផ្លិចបំផ្លាញដោយក្លែងធ្វើជាកម្មវិធីផ្សេង ឬកម្មវិធីមានប្រយោជន៍",
+    "ñេមែិធីUំ្លិចUំផ្លញ": "កម្មវិធីបំផ្លិចបំផ្លាញ",
+    "Uំ្លិចUំផ្លញ": "បំផ្លិចបំផ្លាញ",
+    "Uំ្លិច": "បំផ្លិច",
+    "Uំផ្លញ": "បំផ្លាញ",
+    "មោFវñលR": "ដោយក្លែង",
+    "វñលR": "ក្លែង",
+    "មធវើជា": "ធ្វើជា",
+    "ñេមែិធីម្េR": "កម្មវិធីផ្សេង",
+    "ñេមែិធីមាP្លរUមោជP'": "កម្មវិធីមានប្រយោជន៍",
+    "មាP្លរUមោជP'": "មានប្រយោជន៍",
+    "មាP្លរUមោជP": "មានប្រយោជន៍",
+    "SPYWARE រUេូលព˘ត៌មាPអ្នñមរUើ ពីñេមែិធីមUើñមគហទំព˘fមោFេិP មាPកាfFល់រពេ។": "SPYWARE ប្រមូលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីបើកគេហទំព័រដោយមិនមានការយល់ព្រម។",
+    "SPYWARE រUេូលព˘ត៌មាPអ្នñមរUើ ពីñេមែិធីមUើñមគហទំព˘fមោFេិP មាPកាfFល់រពេ": "SPYWARE ប្រមូលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីបើកគេហទំព័រដោយមិនមានការយល់ព្រម",
+    "រUេូលព˘ត៌មាPអ្នñមរUើ": "ប្រមូលព័ត៌មានអ្នកប្រើ",
+    "រUេូល": "ប្រមូល",
+    "ព˘ត៌មាP": "ព័ត៌មាន",
+    "អ្នñមរUើ": "អ្នកប្រើ",
+    "ñេមែិធីមUើñមគហទំព˘f": "កម្មវិធីបើកគេហទំព័រ",
+    "មUើñមគហទំព˘f": "បើកគេហទំព័រ",
+    "មUើñ": "បើក",
+    "មគហទំព˘f": "គេហទំព័រ",
+    "មោFេិP": "ដោយមិន",
+    "េិP": "មិន",
+    "មាPកាfFល់រពេ": "មានការយល់ព្រម",
+    "កាfFល់រពេ": "ការយល់ព្រម",
+    "ADWARE Uងាហញកាf្ាF b6ិជជñេមវដលេិPចR់បាP មោFមរUើ pop-up": "ADWARE បង្ហាញការផ្សាយពាណិជ្ជកម្មដែលមិនចង់បាន ដោយប្រើ pop-up",
+    "Uងាហញកាf្ាF": "បង្ហាញការផ្សាយ",
+    "Uងាហញ": "បង្ហាញ",
+    "កាf្ាF": "ការផ្សាយ",
+    "b6ិជជñេម": "ពាណិជ្ជកម្ម",
+    "វដលេិPចR់បាP": "ដែលមិនចង់បាន",
+    "េិPចR់បាP": "មិនចង់បាន",
+    "ចR់បាP": "ចង់បាន",
+    "RANSOMWARE េិនឱ្យអ្នក បប្បីចូលបប្បីឯកសាររបស់ខួលន វាអ្ិនប្គ្ីបឯកសារបនាុះ រួចទារ ឱ្យអ្នកបប្បីោក់ពាកយសមាា ត្់ បដីេីបបោុះ": "RANSOMWARE មិនឱ្យអ្នកប្រើចូលប្រើឯកសាររបស់ខ្លួន វាអ៊ិនគ្រីបឯកសារនោះ រួចទារឱ្យអ្នកប្រើដាក់ពាក្យសម្ងាត់ ដើម្បីដោះ",
+    "េិនឱ្យអ្នក បប្បីចូលបប្បីឯកសាររបស់ខួលន": "មិនឱ្យអ្នកប្រើចូលប្រើឯកសាររបស់ខ្លួន",
+    "េិនឱ្យអ្នក": "មិនឱ្យអ្នក",
+    "បប្បីចូលបប្បី": "ប្រើចូលប្រើ",
+    "វាអ្ិនប្គ្ីបឯកសារបនាុះ": "វាអ៊ិនគ្រីបឯកសារនោះ",
+    "អ្ិនប្គ្ីប": "អ៊ិនគ្រីប",
+    "បនាុះ": "នោះ",
+    "រួចទារ ឱ្យអ្នកបប្បីោក់ពាកយសមាា ត្់ បដីេីបបោុះ": "រួចទារឱ្យអ្នកប្រើដាក់ពាក្យសម្ងាត់ ដើម្បីដោះ",
+    "ឱ្យអ្នកបប្បីោក់ពាកយសមាា ត្់ បដីេីបបោុះ": "ឱ្យអ្នកប្រើដាក់ពាក្យសម្ងាត់ ដើម្បីដោះ",
+    "ោក់ពាកយសមាា ត្់": "ដាក់ពាក្យសម្ងាត់",
+    "ពាកយសមាា ត្់": "ពាក្យសម្ងាត់",
+    "សមាា ត្់": "សម្ងាត់",
+    "សមាាត្់": "សម្ងាត់",
+    "បដីេីបបោុះ": "ដើម្បីដោះ",
+    "បដីេីប": "ដើម្បី",
+    "បោុះ": "ដោះ",
+    "ខួលន": "ខ្លួន",
+    "ជញ្ំា ងប្ីលង": "ជញ្ជាំងភ្លើង",
+    "បចតេបបននភាA": "បច្ចុប្បន្នភាព",
+    "បចតេបបននភាព": "បច្ចុប្បន្នភាព",
+    "ភាAងាយរងបប្គ្មុះ": "ភាពងាយរងគ្រោះ",
+    "បប្គ្មុះ": "គ្រោះ",
+    'មា"លាវ': "ម៉ាល់វែរ",
+    'មា"ល់វែ': "ម៉ាល់វែរ",
+    'មា"លវែ': "ម៉ាល់វែរ",
+    'មា"លវោ': "ម៉ាល់វែរ",
+    'មា"លីវ': "ម៉ាល់វែរ",
+    'មា"លៀវ': "ម៉ាល់វែរ",
+    'មា”លាវ': "ម៉ាល់វែរ",
+    'មា“លាវ': "ម៉ាល់វែរ",
+    'មា”ល់វែ': "ម៉ាល់វែរ",
+    "មៅñនុRមេមfៀPមPេះ មFើRPឹRសិñាពីចំ6ុចដូចខាRមរកាេ": "នៅក្នុងមេរៀននេះ យើងនឹងសិក្សាពីចំណុចដូចខាងក្រោម",
+    "បត្ីមា៉ា ល់វវជាអ្ីវ?": "តើម៉ាល់វែរជាអ្វី?",
+    "បេបោគ្ ឬកេមវិធីAាបាទ គ្ឺសំបៅបៅបលីAAួក Virus, Worm, Trojans, Spyware, Adware និង ទប្េង់ បសេងៗបទៀត្បនកូដAាបាទ វាប្ត្ូវបានត្ំប  ីងបោយគ្មម នការយល់ប្AេAីអ្នកបប្បីប្បាស់។": "មេរោគ ឬកម្មវិធីព្យាបាទ គឺសំដៅទៅលើពពួក Virus, Worm, Trojans, Spyware, Adware និងទម្រង់ផ្សេងៗទៀតនៃកូដព្យាបាទ វាត្រូវបានដំឡើងដោយគ្មានការយល់ព្រមពីអ្នកប្រើប្រាស់។",
+    "ការកំណត្់រចនាសេព័នធ": "ការកំណត់រចនាសម្ព័ន្ធ",
+    "បគ្មលនបោបាយសន្ិសតខ": "គោលនយោបាយសន្តិសុខ",
+    "បត្ីមា៉ា ល់វវឆ្លងចូលកំតAយូទ័រ ឬឧបករណ៍បោយរបបៀបណ្ត?": "តើម៉ាល់វែរឆ្លងចូលកុំព្យូទ័រ ឬឧបករណ៍ដោយរបៀបណា?",
+    "កំតAយូទ័រ ឬឧបករណ៍ទូបៅអាចឆ្លងបេបោគ្តាេវិធីដូចជា៖": "កុំព្យូទ័រ ឬឧបករណ៍ទូទៅអាចឆ្លងមេរោគតាមវិធីដូចជា៖",
+    "ទាកយកកេមវិធីវដលមានបេបោគ្ (Download infected software)": "ទាញយកកម្មវិធីដែលមានមេរោគ (Download infected software)",
+    "ទាកយកកេមវិធីវដលមានបេបោគ្": "ទាញយកកម្មវិធីដែលមានមេរោគ",
+    "បបីកឯកសារភាា ប់កតនងសារបអ្  ិចប្ត្ូនិក (Opening E-mail attachments)": "បើកឯកសារភ្ជាប់ក្នុងសារអេឡិចត្រូនិក (Opening E-mail attachments)",
+    "បបីកឯកសារភាា ប់កតនងសារបអ្  ិចប្ត្ូនិក": "បើកឯកសារភ្ជាប់ក្នុងសារអេឡិចត្រូនិក",
+    "បប្បីប្បាស់ថាស ឬឌីសវដលមានបេបោគ្ (Using an infected disc or drive)": "ប្រើប្រាស់ថាស ឬឌីសដែលមានមេរោគ (Using an infected disc or drive)",
+    "មរUើñេមែិធីñំចាត់មេមោគ": "ប្រើកម្មវិធីកម្ចាត់មេរោគ",
+    'ñេមែិធីñំចាត់មេមោគរតូែបាPមរUើមដើេបីមសេPឯñសាf ñនុRមោលUំ6Rមដើេបីñំ6ត់អ្តតសញ្ញ6 PិRលពUUំបាត់ មេមោគ។ ñេមែិធីñំចាត់មេមោគជាធេមតារតូែបាPមរUើតាេែិធីសាស្រសតពីfោ"R៖': "កម្មវិធីកម្ចាត់មេរោគត្រូវបានប្រើដើម្បីស្កេនឯកសារ ក្នុងគោលបំណងដើម្បីកំណត់អត្តសញ្ញាណ និងលុបបំបាត់មេរោគ។ កម្មវិធីកម្ចាត់មេរោគជាធម្មតាត្រូវបានប្រើតាមវិធីសាស្ត្រពីរយ៉ាង៖",
+    "មរUើរបាស់ែចនាPពរñេមេមោគមដើេបីវសវRfñមេមោគវដលមគសាគល់។": "ប្រើប្រាស់វចនានុក្រមមេរោគដើម្បីស្វែងរកមេរោគដែលគេស្គាល់។",
+    "វសវRfñមោFមរUើឥfិោUថវដលគួfមោFសRេ˘FមៅñនុRfមUៀUវដលñេមែិធីដំម6ើfកាf។": "ស្វែងរកដោយប្រើឥរិយាបថដែលគួរឱ្យសង្ស័យនៅក្នុងរបៀបដែលកម្មវិធីដំណើរការ។",
+    "ឧទាហរណ៍កេមវិធីកំចត្់បេបោគ្ Microsoft Security Essentials": "ឧទាហរណ៍កម្មវិធីកម្ចាត់មេរោគ Microsoft Security Essentials",
+    "កាfកាfbfទិPនP˘F PិR 3Uñf6'": "ការការពារទិន្នន័យ និង ឧបករណ៍",
+    "កាfកាfbfទិPនP˘F PិR3Uñf6'": "ការការពារទិន្នន័យ និងឧបករណ៍",
+    "មោលកាf6'វ6នាំេួFចំPួPសរមាU់bñូសមាងត់៖": "គោលការណ៍ណែនាំមួយចំនួនសម្រាប់កូដសម្ងាត់៖",
+    "១. UមRេើតbñូសមាងត់វដលមាPរUវែRរគU់រោP់": "១. បង្កើតកូដសម្ងាត់ដែលមានប្រវែងគ្រប់គ្រាន់",
+    "២. UមRេើតbñូសមាងត់មោFតួអ្ñេfរគU់រោP់": "២. បង្កើតកូដសម្ងាត់ដោយតួអក្សរគ្រប់គ្រាន់",
+    "៣. ñពំវចñfំវលñbñូសមាងត់": "៣. កុំចែករំលែកកូដសម្ងាត់",
+    "៤. ផ្លស់Uតទfbñូសមាងត់ញឹñញាU់": "៤. ផ្លាស់ប្តូរកូដសម្ងាត់ញឹកញាប់",
+    "ប្ត្ូវបានបប្បីបដីេីបការពារអ្នកបប្បីប្បាស់ អ្ីតនធឺណិត្ វដលគ្មម នការអ្នតញ្ា ត្ Aីការចូលបប្បីបណ្ត្ញឯកជន": "ត្រូវបានប្រើដើម្បីការពារអ្នកប្រើប្រាស់អ៊ីនធឺណិត ដែលគ្មានការអនុញ្ញាត ពីការចូលប្រើបណ្តាញឯកជន",
+    "វដលភាា ប់បៅអ្ីតនធឺណិត្។": "ដែលភ្ជាប់ទៅអ៊ីនធឺណិត។",
+    "ការរការទតកទិននន័យបៅទីតាំងឆ្ងា យ": "ការរក្សាទុកទិន្នន័យនៅទីតាំងឆ្ងាយ",
+    "ជាភាAចំបាច់កតនងការបធីវការបប្េុងទតកទិននន័យជាប្បចំ ចំបពាុះឯកសារវដលអាចបាត្់បង់ឬបំផ្ល ញបោយបចដន្ យ។": "ជាភាពចាំបាច់ក្នុងការធ្វើការបម្រុងទុកទិន្នន័យជាប្រចាំ ចំពោះឯកសារដែលអាចបាត់បង់ ឬបំផ្លាញដោយចៃដន្យ។",
+    "ថាសរឹងក៏អាចមានបញ្ា វដរ ដូបចនុះការបប្េុងទតកប្ត្ូវវត្បធីវប  ីង បោយឧបករណ៍ខាងបប្ៅដូចជា៖ សីតឌី,  ឌីវីឌី, ថាសរឹងខាងបប្ៅ ឬ យូបអ្សបី (USB) ជាបដីេ។": "ថាសរឹងក៏អាចមានបញ្ហាដែរ ដូច្នេះការបម្រុងទុកត្រូវតែធ្វើឡើង ដោយឧបករណ៍ខាងក្រៅដូចជា៖ ស៊ីឌី, ឌីវីឌី, ថាសរឹងខាងក្រៅ ឬ យូអេសប៊ី (USB) ជាដើម។",
+    'ជបប្េីសេួយបទៀត្ គ្ឺការបប្េុងទិននន័យទតកបលីអ្តិិនធឺណិត្បោយបប្បីប្បាស់ “ដំបណ្តុះប្សាយAAកសតទក” បោយ': 'ជម្រើសមួយទៀត គឺការបម្រុងទិន្នន័យទុកលើអ៊ីនធឺណិតដោយប្រើប្រាស់ “ដំណោះស្រាយពពកផ្ទុក” ដោយ',
+    "បជៀសវាងហានិ្័យ បនការបាត្់បង់ទិននន័យ វដលបណ្ត្លេកAី អ្គ្ីគ្័យ, បចរកេម, ឯកសារខូច ឬបប្គ្មុះ": "ជៀសវាងហានិភ័យ នៃការបាត់បង់ទិន្នន័យ ដែលបណ្តាលមកពី អគ្គិភ័យ, ចោរកម្ម, ឯកសារខូច ឬគ្រោះ",
+    "េហន្ោយបសេងបទៀត្។": "មហន្តរាយផ្សេងទៀត។",
+    "សារៈសំខាន់បនការបធីវបចតេបបននភាAកេមវិធី": "សារៈសំខាន់នៃការធ្វើបច្ចុប្បន្នភាពកម្មវិធី",
+    "បញ្ា ពាក់A័នធជាេួយការខកខានេិនបានបធីវឱ្យកេមវិធីកំតAយូទ័រទាន់សេ័យ (up-to-date) រួេមាន៖": "បញ្ហាពាក់ព័ន្ធជាមួយការខកខានមិនបានធ្វើឱ្យកម្មវិធីកុំព្យូទ័រទាន់សម័យ (up-to-date) រួមមាន៖",
+    "ភាAងាយរងបប្គ្មុះចំបពាុះបេបោគ្សាព យវវ (Spyware) និងបេបោគ្បសេងៗបទៀត្ (Malware)": "ភាពងាយរងគ្រោះចំពោះមេរោគស្ប៉ាយវែរ (Spyware) និងមេរោគផ្សេងៗទៀត (Malware)",
+    "កេមវិធីជាប់គ្មំង ឬេិនដំបណីរការលា": "កម្មវិធីជាប់គាំង ឬមិនដំណើរការល្អ",
+    "ការបធីវបចតេបបននភាAកេមវិធីេិនប្ត្ឹេវត្បធីវឱ្យប្បបសីរប  ីងនូវវសនកសន្ិសតខបត៉ាបណ្តោ ុះបទ បត៉ាវន្វាក៏បានជួយវកលេា": "ការធ្វើបច្ចុប្បន្នភាពកម្មវិធីមិនត្រឹមតែធ្វើឱ្យប្រសើរឡើងនូវផ្នែកសន្តិសុខប៉ុណ្ណោះទេ ប៉ុន្តែវាក៏បានជួយកែលម្អ",
+    "និងមានេតខងារថីមៗសងវដរ។": "និងមានមុខងារថ្មីៗផងដែរ។",
+    'រUជាជPទូមៅមាPកាfរពួFបាfេភកាP់វតខាលំRម ើRពី្លU"េះ bល់បPfមUៀUfស់មៅវUUសេ˘F ទំមPើUfUស់មFើRមៅមលើU fិសាថP។ មៅមពលអ្នññំពពRមរUើរបាស់Uមចេñែិទា អ្នñោចfួេ ចំវ6ñ ជួFកាត់UPថF្លU"េះbល់មPេះបាP៕': "ប្រជាជនទូទៅមានការព្រួយបារម្ភកាន់តែខ្លាំងឡើងពីផលប៉ះពាល់នៃរបៀបរស់នៅបែបសម័យទំនើបរបស់យើងទៅលើបរិស្ថាន។ នៅពេលអ្នកកំពុងប្រើប្រាស់បច្ចេកវិទ្យា អ្នកអាចរួមចំណែកជួយកាត់បន្ថយផលប៉ះពាល់នេះបាន។",
+    "ការបលីកេពស់ភាAងាយប្សួល": "ការលើកកម្ពស់ភាពងាយស្រួល",
+    "មានជបប្េីសជាបប្ចីនបដីេីបវកលេារភាAងាយប្សួលកតនងកំតAយូទ័រ ទាំងបនុះរួេមានកេមវិធីសាគ ល់សបេលង (speech recognition) អ្នកអានបអ្ប្កង់(screen reader) ឧបករណ៍Aប្ងីកបអ្ប្កង់ (screen magnifiers) កា្ រចតច បលីបអ្ប្កង់ (On-screen keyboard) និងបេីលកប្េិត្ខពស់ (high-contrast views)": "មានជម្រើសជាច្រើនដើម្បីកែលម្អភាពងាយស្រួលក្នុងកុំព្យូទ័រ ទាំងនេះរួមមានកម្មវិធីស្គាល់សំឡេង (speech recognition) អ្នកអានអេក្រង់ (screen reader) ឧបករណ៍ពង្រីកអេក្រង់ (screen magnifiers) ក្តារចុចលើអេក្រង់ (On-screen keyboard) និងមើលកម្រិតខ្ពស់ (high-contrast views)",
+    "ោសFោឋP: ្លទែជាតិមលខ ៦ោ, ភូេិខទ, សងាកត់វរពñមលៀU ខ6ឌ មរជាFចងាវf, ោជធាPីភនំមពញ": "អាសយដ្ឋាន: ផ្លូវជាតិលេខ ៦អា, ភូមិ២, សង្កាត់ព្រែកលៀប ខណ្ឌជ្រោយចង្វារ, រាជធានីភ្នំពេញ",
+    "មលខទូfសពទ: (+៨៥៥) ១០ ៦៦០ ៩០០": "លេខទូរស័ព្ទ: (+៨៥៥) ១០ ៦៦០ ៩០០",
 }
 
 # Phrase-level fixes applied AFTER KES canonical ordering (keys are canonical forms).
 FINAL_PHRASE_FIXES: Dict[str, str] = {
     'មា"លវោ': "ម៉ាល់វែរ",
-    "បដិមា ល់វវជាអ្វី?": "ម៉ាល់វែរ ជាអ្វី?",
+    'មា"លាវ': "ម៉ាល់វែរ",
+    'មា"ល់វែ': "ម៉ាល់វែរ",
+    'មា"លវែ': "ម៉ាល់វែរ",
+    'មា"លីវ': "ម៉ាល់វែរ",
+    'មា"លៀវ': "ម៉ាល់វែរ",
+    "បដិមា ល់វវជាអ្វី?": "តើម៉ាល់វែរជាអ្វី?",
+    "ម៉ាល់វែរ ជាអ្វី?": "តើម៉ាល់វែរជាអ្វី?",
+    "នៅក្នុងមេមរមេរៀននេះ មយើងនឹងសិក្សាពីចំណុចដូចខាងក្រោម": "នៅក្នុងមេរៀននេះ យើងនឹងសិក្សាពីចំណុចដូចខាងក្រោម",
+    "មេរោគ ឬកម្មវិធីព្យាបាទ គឺសំដៅទៅលើពពក Virus, Worm, Trojans, Spyware, Adware និង ទម្រង់ ផ្សេងៗទៀតាបនៃកូដព្យាបាទ វាត្រូវបានដំឡើងដោយគ្មាន នៃការយល់ព្រមពីអ្នកប្រើប្រាស់។": "មេរោគ ឬកម្មវិធីព្យាបាទ គឺសំដៅទៅលើពពួក Virus, Worm, Trojans, Spyware, Adware និងទម្រង់ផ្សេងៗទៀតនៃកូដព្យាបាទ វាត្រូវបានដំឡើងដោយគ្មានការយល់ព្រមពីអ្នកប្រើប្រាស់។",
+    "ការកំណត់រចនាសេព័ន្ធ": "ការកំណត់រចនាសម្ព័ន្ធ",
+    "គេមលនប៉ោបាយសែនសុខ": "គោលនយោបាយសន្តិសុខ",
+    "បដិមា ល់វវឆ្លងចូលកុំព្យូទ័រ ឬឧបករណ៍ដោយរបៀបណោត?": "តើម៉ាល់វែរឆ្លងចូលកុំព្យូទ័រ ឬឧបករណ៍ដោយរបៀបណា?",
+    "បដិមា ល់វវឆ្លងចូលកុំព្យូទ័រ ឬឧបករណ៍ដោយរបៀបណឺត?": "តើម៉ាល់វែរឆ្លងចូលកុំព្យូទ័រ ឬឧបករណ៍ដោយរបៀបណា?",
+    "កុំព្យូទ័រ ឬឧបករណ៍ទូទៅអាចឆ្លងមេរោគតាវិធីដូចជា៖": "កុំព្យូទ័រ ឬឧបករណ៍ទូទៅអាចឆ្លងមេរោគតាមវិធីដូចជា៖",
+    "ទាកយកកម្មវិធីដែលមានមេរោគ": "ទាញយកកម្មវិធីដែលមានមេរោគ",
+    "បើកឯកសារតភ្ជាប់ក្នុងសារបអិចប្ត្នូិក": "បើកឯកសារភ្ជាប់ក្នុងសារអេឡិចត្រូនិក",
+    "បើកឯកសារតភ្ជាប់ក្នុងសារបអិចប្ត្នូិចប្ត្នូិក": "បើកឯកសារភ្ជាប់ក្នុងសារអេឡិចត្រូនិក",
+    "ប្រើប្រាស់ថាស ឬដីសដែលមានមេរោគ": "ប្រើប្រាស់ថាស ឬឌីសដែលមានមេរោគ",
+    "ប្រើកម្មវិធីកម្ចត់មេរោគ": "ប្រើកម្មវិធីកម្ចាត់មេរោគ",
+    "ឧទាហរណ៍កម្មវិធីគំចត់មេរោគ Microsoft Security Essentials": "ឧទាហរណ៍កម្មវិធីកម្ចាត់មេរោគ Microsoft Security Essentials",
+    "ការការbfទិន្នន័យ និង ឧបករណ៍": "ការការពារទិន្នន័យ និង ឧបករណ៍",
+    "ការការbfទិន្នន័យ និងឧបករណ៍": "ការការពារទិន្នន័យ និងឧបករណ៍",
+    "គោលការ6'ណែនាំមួយចំនួនសម្រាប់កូដសម្ងាត់៖": "គោលការណ៍ណែនាំមួយចំនួនសម្រាប់កូដសម្ងាត់៖",
+    "២.បង្កើតកូដសម្ងាត់ឱ្យតួអកេរគ្រប់គ្រាន់": "២. បង្កើតកូដសម្ងាត់ដោយតួអក្សរគ្រប់គ្រាន់",
+    "៣.កពំវចករំវលកកូដសម្ងាត់": "៣. កុំចែករំលែកកូដសម្ងាត់",
+    "៤.ផ្លាស់ប្តូរទរកូដសម្ងាត់ញឹកញាប់": "៤. ផ្លាស់ប្តូរកូដសម្ងាត់ញឹកញាប់",
+    "៤. ផ្លាស់ប្តូរទរកូដសម្ងាត់ញឹកញាប់": "៤. ផ្លាស់ប្តូរកូដសម្ងាត់ញឹកញាប់",
+    "ត្រូវបានប្រើដើម្បីការពារអ្នកប្រើប្រាស់ អ៊ីនធឺណិត្តែលគ្មានការអនុញ្ញាត ពីការចូលប្រើបណ្តាញឯកជន": "ត្រូវបានប្រើដើម្បីការពារអ្នកប្រើប្រាស់អ៊ីនធឺណិត ដែលគ្មានការអនុញ្ញាត ពីការចូលប្រើបណ្តាញឯកជន",
+    "ដែលតភ្ជាប់បៅអ៊ីនធឺណិត។": "ដែលភ្ជាប់ទៅអ៊ីនធឺណិត។",
+    "ការរការទុកទិន្នន័យបៅទីតាំងឆ្ងែ យ": "ការរក្សាទុកទិន្នន័យនៅទីតាំងឆ្ងាយ",
+    "ហ៊េុន្យោផ្សេងទៀត។": "មហន្តរាយផ្សេងទៀត។",
+    "សារៈសំខាន់បនៃការធ្វើបច្ចុប្បន្នភាពកម្មវិធី": "សារៈសំខាន់នៃការធ្វើបច្ចុប្បន្នភាពកម្មវិធី",
+    "សារៈសំខាន់បនៃការបនៃការធ្វើបច្ចុប្បន្នភាពកម្មវិធី": "សារៈសំខាន់នៃការធ្វើបច្ចុប្បន្នភាពកម្មវិធី",
+    "ភាពងាយរងគ្រោះចំពោះមេរោគសាព យវវ (Spyware) និងមេរោគផ្សេងៗទៀត (Malware)": "ភាពងាយរងគ្រោះចំពោះមេរោគស្ប៉ាយវែរ (Spyware) និងមេរោគផ្សេងៗទៀត (Malware)",
+    "កម្មវិធីជាប់ក្មេង ឬនៅដំបណីរការលា": "កម្មវិធីជាប់គាំង ឬមិនដំណើរការល្អ",
+    "កម្មវិធីជាប់ក្មាង ឬនៅដំបណីរការលា": "កម្មវិធីជាប់គាំង ឬមិនដំណើរការល្អ",
+    "និងមានេតខងារថ្មីៗសង្វរ។": "និងមានមុខងារថ្មីៗផងដែរ។",
+    "ការលើគេពស់ភាពងាយស្រួល": "ការលើកកម្ពស់ភាពងាយស្រួល",
+    "សយន: ផ្លូវជាតិលេខ៦ោ, ភូមិ២,សងាកតវរពកមលៀប ខណ្ឌ មរជាយចងាវរ, រាជធានីភ្នំពេញ": "អាសយដ្ឋាន: ផ្លូវជាតិលេខ ៦អា, ភូមិ២, សង្កាត់ព្រែកលៀប ខណ្ឌជ្រោយចង្វារ, រាជធានីភ្នំពេញ",
+    "សយន: ផ្លូវជាតិលេខ៦ោ, ភូមិ២,សងាកតវរពកមលៀប ខណ្ឌ មរជាយចងាវរ,រាជធានីភ្នំពេញ": "អាសយដ្ឋាន: ផ្លូវជាតិលេខ ៦អា, ភូមិ២, សង្កាត់ព្រែកលៀប ខណ្ឌជ្រោយចង្វារ, រាជធានីភ្នំពេញ",
+    "លេខទូរសព្ទ: (+៨៥៥) ១០ ៦៦០ ៩០០": "លេខទូរស័ព្ទ: (+៨៥៥) ១០ ៦៦០ ៩០០",
     "សំដៅបៅលើពពក": "សំដៅលើពពួក",
     "សំដៅបៅ": "សំដៅទៅ",
     "ទប្ងេ់": "ទម្រង់",
@@ -1564,8 +1764,6 @@ FINAL_PHRASE_FIXES: Dict[str, str] = {
     "ឃ្មមៗ": "គ្មាន",
     "ឃ្មម": "គ្មាន",
     "បាពើ": "ព្រមពី",
-    "នកូដ": "នៃកូដ",
-    "នការ": "នៃការ",
     "គេមែិធី": "កម្មវិធី",
     "គេមែធី": "កម្មវិធី",
     "គេមែិធូីំលិច": "កម្មវិធីលេចឡើង",
@@ -1574,6 +1772,111 @@ FINAL_PHRASE_FIXES: Dict[str, str] = {
     "ហ្អែងS": "ផ្សេងៗ",
     "ហ្អែង": "ផ្សេងៗ",
     "ទងអញាណ": "សញ្ញាណ",
+    "នងាតមានវិះទាបបៃតង": "ព័ត៌មានវិទ្យាបៃតង",
+    "A័ត្៌មានវិទាបបត្ង": "ព័ត៌មានវិទ្យាបៃតង",
+    "ព័តមានែិទាបបតង": "ព័ត៌មានវិទ្យាបៃតង",
+    "សពខភាព PិRព˘ត៌មាPែិទាបUតR": "សុខភាព និងព័ត៌មានវិទ្យាបៃតង",
+    "សតខភាA និងA័ត្៌មានវិទាបបត្ង": "សុខភាព និងព័ត៌មានវិទ្យាបៃតង",
+    "សតខភាA": "សុខភាព",
+    "សតខមាលភាA": "សុខុមាលភាព",
+    "សតវត្ិថភាA": "សុវត្ថិភាព",
+    "កម្មវិះធូីំលិច": "កម្មវិធីបំផ្លិចបំផ្លាញ",
+    "កម្មវិះធូីំ": "កម្មវិធី",
+    "តាបីម្ញើរ ចាប់ចេះលងខ្លួនវាមៅកុំព្យូទ័រមេង មុទិតា។": "ដើម្បីផ្ញើ ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត។",
+    "តាបីម្ញើរ ចាប់ចេះលងខ្លួនវាមៅកុំព្យូទ័រមេង មុទិតា": "ដើម្បីផ្ញើ ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត",
+    "តាបីម្ញើរ": "ដើម្បីផ្ញើ",
+    "ចាប់ចេះលង": "ចម្លង",
+    "ខ្លួនវាមៅ": "ខ្លួនវាទៅ",
+    "កុំព្យូទ័រមេង": "កុំព្យូទ័រផ្សេង",
+    "មេង មុទិតា": "ផ្សេងទៀត",
+    "មុទិតា": "ទៀត",
+    "មុទុតា": "ទៀត",
+    "របេលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីមបើកមគហទំព័រឱ្យេិន មានៃការយល់រំពេ។": "ប្រមូលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីបើកគេហទំព័រដោយមិនមានការយល់ព្រម។",
+    "របេលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីមបើកមគហទំព័រឱ្យេិន មានៃការយល់រំពេ": "ប្រមូលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីបើកគេហទំព័រដោយមិនមានការយល់ព្រម",
+    "របេលព័ត៌មានអ្នកប្រើ": "ប្រមូលព័ត៌មានអ្នកប្រើ",
+    "របេល": "ប្រមូល",
+    "កម្មវិធីមបើកមគហទំព័រ": "កម្មវិធីបើកគេហទំព័រ",
+    "មបើកមគហទំព័រ": "បើកគេហទំព័រ",
+    "ឱ្យេិន": "ដោយមិន",
+    "មានៃការយល់រំពេ": "មានការយល់ព្រម",
+    "ការយល់រំពេ": "ការយល់ព្រម",
+    "មានៃការ": "មានការ",
+    "មានៃ": "មាន",
+    "WORM មេមោគចេលRមោFខលួPឯR មោFមរUើUណ្តញñពំពូទទ˘fមដើេបីម្ញើf ចាU់ចេលRខលួPវាមៅñពំពូទទ˘fម្េR មទៀត។": "WORM មេរោគចម្លងដោយខ្លួនឯង ដោយប្រើបណ្តាញកុំព្យូទ័រដើម្បីផ្ញើ ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត។",
+    "WORM មេមោគចេលRមោFខលួPឯR មោFមរUើUណ្តញñពំពូទទ˘fមដើេបីម្ញើf ចាU់ចេលRខលួPវាមៅñពំពូទទ˘fម្េR មទៀត": "WORM មេរោគចម្លងដោយខ្លួនឯង ដោយប្រើបណ្តាញកុំព្យូទ័រដើម្បីផ្ញើ ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត",
+    "មេមោគចេលRមោFខលួPឯR": "មេរោគចម្លងដោយខ្លួនឯង",
+    "មោFមរUើUណ្តញñពំពូទទ˘fមដើេបីម្ញើf": "ដោយប្រើបណ្តាញកុំព្យូទ័រដើម្បីផ្ញើ",
+    "ចាU់ចេលRខលួPវាមៅñពំពូទទ˘fម្េR មទៀត": "ចម្លងខ្លួនវាទៅកុំព្យូទ័រផ្សេងទៀត",
+    "មេមោគចេលR": "មេរោគចម្លង",
+    "ចេលR": "ចម្លង",
+    "ខលួPឯR": "ខ្លួនឯង",
+    "មោFមរUើ": "ដោយប្រើ",
+    "មរUើUណ្តញ": "ប្រើបណ្តាញ",
+    "Uណ្តញ": "បណ្តាញ",
+    "ñពំពូទទ˘f": "កុំព្យូទ័រ",
+    "មដើេបីម្ញើf": "ដើម្បីផ្ញើ",
+    "ម្ញើf": "ផ្ញើ",
+    "ចាU់ចេលR": "ចម្លង",
+    "ខលួPវាមៅ": "ខ្លួនវាទៅ",
+    "ម្េR មទៀត": "ផ្សេងទៀត",
+    "ម្េR": "ផ្សេង",
+    "TROJAN HORSE ñេមែិធីUំ្លិចUំផ្លញមោFវñលRមធវើជាñេមែិធីម្េRឬñេមែិធីមាP្លរUមោជP'។": "TROJAN HORSE កម្មវិធីបំផ្លិចបំផ្លាញដោយក្លែងធ្វើជាកម្មវិធីផ្សេង ឬកម្មវិធីមានប្រយោជន៍។",
+    "TROJAN HORSE ñេមែិធីUំ្លិចUំផ្លញមោFវñលRមធវើជាñេមែិធីម្េRឬñេមែិធីមាP្លរUមោជP'": "TROJAN HORSE កម្មវិធីបំផ្លិចបំផ្លាញដោយក្លែងធ្វើជាកម្មវិធីផ្សេង ឬកម្មវិធីមានប្រយោជន៍",
+    "ñេមែិធីUំ្លិចUំផ្លញ": "កម្មវិធីបំផ្លិចបំផ្លាញ",
+    "Uំ្លិចUំផ្លញ": "បំផ្លិចបំផ្លាញ",
+    "Uំ្លិច": "បំផ្លិច",
+    "Uំផ្លញ": "បំផ្លាញ",
+    "មោFវñលR": "ដោយក្លែង",
+    "វñលR": "ក្លែង",
+    "មធវើជា": "ធ្វើជា",
+    "ñេមែិធីម្េR": "កម្មវិធីផ្សេង",
+    "ñេមែិធីមាP្លរUមោជP'": "កម្មវិធីមានប្រយោជន៍",
+    "មាP្លរUមោជP'": "មានប្រយោជន៍",
+    "មាP្លរUមោជP": "មានប្រយោជន៍",
+    "SPYWARE រUេូលព˘ត៌មាPអ្នñមរUើ ពីñេមែិធីមUើñមគហទំព˘fមោFេិP មាPកាfFល់រពេ។": "SPYWARE ប្រមូលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីបើកគេហទំព័រដោយមិនមានការយល់ព្រម។",
+    "SPYWARE រUេូលព˘ត៌មាPអ្នñមរUើ ពីñេមែិធីមUើñមគហទំព˘fមោFេិP មាPកាfFល់រពេ": "SPYWARE ប្រមូលព័ត៌មានអ្នកប្រើ ពីកម្មវិធីបើកគេហទំព័រដោយមិនមានការយល់ព្រម",
+    "រUេូលព˘ត៌មាPអ្នñមរUើ": "ប្រមូលព័ត៌មានអ្នកប្រើ",
+    "រUេូល": "ប្រមូល",
+    "ព˘ត៌មាP": "ព័ត៌មាន",
+    "អ្នñមរUើ": "អ្នកប្រើ",
+    "ñេមែិធីមUើñមគហទំព˘f": "កម្មវិធីបើកគេហទំព័រ",
+    "មUើñមគហទំព˘f": "បើកគេហទំព័រ",
+    "មUើñ": "បើក",
+    "មគហទំព˘f": "គេហទំព័រ",
+    "មោFេិP": "ដោយមិន",
+    "េិP": "មិន",
+    "មាPកាfFល់រពេ": "មានការយល់ព្រម",
+    "កាfFល់រពេ": "ការយល់ព្រម",
+    "ADWARE Uងាហញកាf្ាF b6ិជជñេមវដលេិPចR់បាP មោFមរUើ pop-up": "ADWARE បង្ហាញការផ្សាយពាណិជ្ជកម្មដែលមិនចង់បាន ដោយប្រើ pop-up",
+    "Uងាហញកាf្ាF": "បង្ហាញការផ្សាយ",
+    "Uងាហញ": "បង្ហាញ",
+    "កាf្ាF": "ការផ្សាយ",
+    "b6ិជជñេម": "ពាណិជ្ជកម្ម",
+    "វដលេិPចR់បាP": "ដែលមិនចង់បាន",
+    "េិPចR់បាP": "មិនចង់បាន",
+    "ចR់បាP": "ចង់បាន",
+    "RANSOMWARE េិនឱ្យអ្នក បប្បីចូលបប្បីឯកសាររបស់ខួលន វាអ្ិនប្គ្ីបឯកសារបនាុះ រួចទារ ឱ្យអ្នកបប្បីោក់ពាកយសមាា ត្់ បដីេីបបោុះ": "RANSOMWARE មិនឱ្យអ្នកប្រើចូលប្រើឯកសាររបស់ខ្លួន វាអ៊ិនគ្រីបឯកសារនោះ រួចទារឱ្យអ្នកប្រើដាក់ពាក្យសម្ងាត់ ដើម្បីដោះ",
+    "េិនឱ្យអ្នក បប្បីចូលបប្បីឯកសាររបស់ខួលន": "មិនឱ្យអ្នកប្រើចូលប្រើឯកសាររបស់ខ្លួន",
+    "េិនឱ្យអ្នក": "មិនឱ្យអ្នក",
+    "បប្បីចូលបប្បី": "ប្រើចូលប្រើ",
+    "វាអ្ិនប្គ្ីបឯកសារបនាុះ": "វាអ៊ិនគ្រីបឯកសារនោះ",
+    "អ្ិនប្គ្ីប": "អ៊ិនគ្រីប",
+    "បនាុះ": "នោះ",
+    "រួចទារ ឱ្យអ្នកបប្បីោក់ពាកយសមាា ត្់ បដីេីបបោុះ": "រួចទារឱ្យអ្នកប្រើដាក់ពាក្យសម្ងាត់ ដើម្បីដោះ",
+    "ឱ្យអ្នកបប្បីោក់ពាកយសមាា ត្់ បដីេីបបោុះ": "ឱ្យអ្នកប្រើដាក់ពាក្យសម្ងាត់ ដើម្បីដោះ",
+    "ោក់ពាកយសមាា ត្់": "ដាក់ពាក្យសម្ងាត់",
+    "ពាកយសមាា ត្់": "ពាក្យសម្ងាត់",
+    "សមាា ត្់": "សម្ងាត់",
+    "សមាាត្់": "សម្ងាត់",
+    "បដីេីបបោុះ": "ដើម្បីដោះ",
+    "បដីេីប": "ដើម្បី",
+    "បោុះ": "ដោះ",
+    "ខួលន": "ខ្លួន",
+    "ជញ្ំា ងប្ីលង": "ជញ្ជាំងភ្លើង",
+    "បចតេបបននភាA": "បច្ចុប្បន្នភាព",
+    "បចតេបបននភាព": "បច្ចុប្បន្នភាព",
+    "ភាAងាយរងបប្គ្មុះ": "ភាពងាយរងគ្រោះ",
+    "បប្គ្មុះ": "គ្រោះ",
     "វកការកំណត់រចនាសេពនធ": "ឬការកំណត់រចនាសម្ព័ន្ធ",
     "ប្រមូលយកាតមានដែលរក្សាទុកខក្នុងកុំព្យូយទ័រ": "ប្រមូលយកព័ត៌មានដែលរក្សាទុកក្នុងកុំព្យូទ័រ",
     "បែកផ្ទះ ងវីនដូបន្ថែម": "បើកផ្ទាំងវីនដូបន្ថែម",
@@ -1608,9 +1911,14 @@ HEURISTIC_RULES: List[Tuple[re.Pattern, str, str]] = [
     ),
     # 5. Misplaced Latin characters in Khmer words
     (
+        re.compile(r'ភ្ជA'),
+        'ភាព',
+        "Replace legacy ភ្ជA with ភាព"
+    ),
+    (
         re.compile(r'([\u1780-\u17B3])A'),
-        '\\1ា',
-        "Replace Latin 'A' trailing Khmer consonant with Sra Aa (ា)"
+        '\\1ព',
+        "Replace Latin 'A' trailing Khmer consonant with Khmer Po (ព)"
     ),
     (
         re.compile(r'([\u1780-\u17B3])a'),
@@ -1809,11 +2117,12 @@ def sanitize_khmer_coeng(text: str) -> str:
     a preceding and succeeding Khmer consonant.
     Prevents the dotted-circle artifact (◌្ and ◌ំ).
     """
-    # 0. Canonicalize out-of-order Coeng + Vowel (e.g. អ្ីវ -> អ្វី) before stripping
-    text = re.sub(r'([\u1780-\u17A2])\u17D2([\u17B6-\u17C5])([\u1780-\u17A2])', '\\1\u17D2\\3\\2', text)
-    # 1. Join spaces between consonants and Coeng
+    # 0. Fix specific out-of-order Coeng + Vowel in អ្ីវ -> អ្វី
+    text = text.replace('អ្ីវ', 'អ្វី')
+    # 1. Strip trailing dangling Coeng before whitespace/punctuation (do not glue separate words across spaces!)
+    text = re.sub(r'\u17D2(?=[\s\n\.,;:!?\)\]]|$)', '', text)
+    # Join spaces between consonants and Coeng
     text = re.sub(r'([\u1780-\u17A2\u17B1])\s+\u17D2', '\\1្', text)
-    text = re.sub(r'\u17D2\s+([\u1780-\u17A2])', '្\\1', text)
     # Strip space before any dependent vowel or accent
     text = re.sub(r'\s+([\u17B6-\u17CD])', r'\1', text)
     # 2. Strip any Coeng not preceded by a Khmer consonant or independent vowel OO (\u17B1 for ឱ្យ)
@@ -1881,25 +2190,95 @@ def repair_khmer_heuristics(text: str) -> Tuple[str, List[Dict[str, str]]]:
     return current, applied
 
 
+import os
+
+CUSTOM_DICT_FILE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "custom_dictionary.txt")
+)
+_CUSTOM_FILE_MTIME: float = 0.0
+_CUSTOM_FILE_DICT: Dict[str, str] = {}
+
+
+def get_user_custom_dictionary() -> Dict[str, str]:
+    """
+    Hot-reloads custom_dictionary.txt from the project root whenever modified.
+    Supports formats:
+      - wrong = right
+      - wrong -> right
+      - wrong (right)
+      - single valid word on its own line (registered into khmer_validator.words)
+    """
+    global _CUSTOM_FILE_MTIME, _CUSTOM_FILE_DICT, _CACHED_DICT_REGEX
+    try:
+        if not os.path.exists(CUSTOM_DICT_FILE):
+            return _CUSTOM_FILE_DICT
+        mtime = os.path.getmtime(CUSTOM_DICT_FILE)
+        if mtime == _CUSTOM_FILE_MTIME:
+            return _CUSTOM_FILE_DICT
+        _CUSTOM_FILE_MTIME = mtime
+        new_dict: Dict[str, str] = {}
+        valid_words: List[str] = []
+        with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "->" in line:
+                    parts = line.split("->", 1)
+                    k, v = parts[0].strip(), parts[1].strip()
+                    if k and v:
+                        new_dict[k] = v
+                        valid_words.append(v)
+                elif "=" in line:
+                    parts = line.split("=", 1)
+                    k, v = parts[0].strip(), parts[1].strip()
+                    if k and v:
+                        new_dict[k] = v
+                        valid_words.append(v)
+                else:
+                    m = re.match(r'^(.+?)\s*\((.+?)\)\s*$', line)
+                    if m:
+                        k, v = m.group(1).strip(), m.group(2).strip()
+                        if k and v:
+                            new_dict[k] = v
+                            valid_words.append(v)
+                    else:
+                        valid_words.append(line)
+        _CUSTOM_FILE_DICT = new_dict
+        _CACHED_DICT_REGEX = None
+        try:
+            from .khmer_validator import khmer_validator
+            for w in valid_words:
+                norm_w = unicodedata.normalize("NFC", w)
+                khmer_validator.words.add(norm_w)
+                for sub in re.findall(r'[\u1780-\u17D3]+', norm_w):
+                    if len(sub) >= 2:
+                        khmer_validator.words.add(sub)
+        except Exception:
+            pass
+    except Exception:
+        pass
+    return _CUSTOM_FILE_DICT
+
+
 _CACHED_DICT_REGEX = None
 _CACHED_DICT_KEYS_LEN = 0
 
-def _get_dict_pattern(combined_dict: Dict[str, str]):
+def _get_dict_pattern(combined_dict: Dict[str, str], is_cacheable: bool = True):
     global _CACHED_DICT_REGEX, _CACHED_DICT_KEYS_LEN
-    is_default = (len(combined_dict) == len(KHMER_CORRUPTION_DICTIONARY))
-    if is_default and _CACHED_DICT_REGEX is not None and _CACHED_DICT_KEYS_LEN == len(combined_dict):
+    if is_cacheable and _CACHED_DICT_REGEX is not None and _CACHED_DICT_KEYS_LEN == len(combined_dict):
         return _CACHED_DICT_REGEX
     valid_keys = [k for k in sorted(combined_dict.keys(), key=len, reverse=True) if k != combined_dict[k] and k]
     if not valid_keys:
         return None
     pattern = re.compile('|'.join(re.escape(k) for k in valid_keys))
-    if is_default:
+    if is_cacheable:
         _CACHED_DICT_REGEX = pattern
         _CACHED_DICT_KEYS_LEN = len(combined_dict)
     return pattern
 
 
-def replace_dictionary_terms(text: str, custom_dict: Dict[str, str] = None) -> Tuple[str, List[Tuple[str, str]]]:
+def replace_dictionary_terms(text: str, custom_dict: Dict[str, str] = None, sanitize: bool = True) -> Tuple[str, List[Tuple[str, str]]]:
     """
     Replaces known corrupted terms with clean Unicode terms.
     Uses single-pass longest-match regex substitution to prevent cascading substring corruptions.
@@ -1908,13 +2287,16 @@ def replace_dictionary_terms(text: str, custom_dict: Dict[str, str] = None) -> T
     if not text:
         return "", []
         
+    user_file_dict = get_user_custom_dictionary()
     combined_dict = dict(KHMER_CORRUPTION_DICTIONARY)
+    if user_file_dict:
+        combined_dict.update(user_file_dict)
     if custom_dict:
         combined_dict.update(custom_dict)
         
-    pattern = _get_dict_pattern(combined_dict)
+    pattern = _get_dict_pattern(combined_dict, is_cacheable=(not custom_dict))
     if not pattern:
-        return sanitize_khmer_coeng(text), []
+        return (sanitize_khmer_coeng(text) if sanitize else text), []
         
     replacements = []
     try:
@@ -1926,16 +2308,36 @@ def replace_dictionary_terms(text: str, custom_dict: Dict[str, str] = None) -> T
     def repl_func(match):
         orig_key = match.group(0)
         s, e = match.span()
-        # Never rewrite part of an already-valid dictionary word (e.g. ខាន inside សំខាន់)
-        for a, b in spans:
-            if a < e and s < b and (s > a or e < b):
-                return orig_key
         replacement = combined_dict[orig_key]
+        # Guard 1: Never start a base-consonant match at a subscript consonant (preceded by Coeng \u17D2)
+        if s > 0 and text[s - 1] == '\u17D2' and orig_key[0] != '\u17D2':
+            return orig_key
+        # Guard 2: Never start a dependent-vowel/sign/Coeng match if attached to a preceding consonant
+        # (Exception: legacy \u17C1 'េ' followed by a consonant/sign like េនក, េីកស្វល, េំAី is a corrupted base អ/ភ, not a dependent vowel)
+        if s > 0 and (0x17B6 <= ord(orig_key[0]) <= 0x17D3) and (0x1780 <= ord(text[s - 1]) <= 0x17B3):
+            if not (orig_key[0] == '\u17C1' and len(orig_key) >= 2):
+                return orig_key
+        # Guard 3: Never duplicate an existing prefix (e.g. ល់ដឹង -> យល់ដឹង when preceded by យ)
+        if replacement.endswith(orig_key):
+            prefix = replacement[:-len(orig_key)]
+            if prefix and s >= len(prefix) and text[s - len(prefix):s] == prefix:
+                return orig_key
+        # Guard 4: Never duplicate an existing suffix (e.g. បញ្ូច -> បញ្ចូល when followed by  ល)
+        if replacement.startswith(orig_key):
+            suffix = replacement[len(orig_key):]
+            if suffix and re.match(r'^\s*' + re.escape(suffix), text[e:]):
+                return orig_key
+        # Guard 5: Never let a short 2-3 char rule rewrite part of an already-valid dictionary word
+        if (e - s) <= 3:
+            for a, b in spans:
+                if a < e and s < b and (s > a or e < b):
+                    return orig_key
         replacements.append((orig_key, replacement))
         return replacement
 
     current = pattern.sub(repl_func, text)
-    current = sanitize_khmer_coeng(current)
+    if sanitize:
+        current = sanitize_khmer_coeng(current)
     return current, replacements
 
 
@@ -1983,7 +2385,7 @@ def extract_word_level_differences(orig: str, fixed: str) -> List[Tuple[str, str
 def restore_khmer_text(text: str, custom_dict: Dict[str, str] = None) -> Tuple[str, List[Tuple[str, str]]]:
     """
     Unified high-level restoration function:
-    Stitch broken spaces -> Exact dictionary replacement -> NFC & KES normalization -> Algorithmic decoding & Auto-repair -> Heuristic rules -> Coeng sanitization.
+    Exact dictionary replacement -> Algorithmic decoding & Auto-repair -> KES normalization -> Heuristic rules -> Coeng sanitization.
     Returns (corrected_text, list_of_word_replacements).
     """
     if not text:
@@ -1991,25 +2393,33 @@ def restore_khmer_text(text: str, custom_dict: Dict[str, str] = None) -> Tuple[s
 
     # Pre-clean zero-width spaces and literal dotted circles
     text = text.replace('\u200b', '').replace('\u25cc', '')
-    # Stitch broken intra-word spaces (e.g. ក ុំ -> កុំ, ម ើង -> យើង)
-    text = re.sub(r'([\u1780-\u17A2]),\s*([\u17B6-\u17D3])', '\\1\\2', text)
-    text = re.sub(r'([\u1780-\u17A2])\s+([\u17B6-\u17D3])', '\\1\\2', text)
-    text = re.sub(r'([\u1780-\u17A2\u17B1])\s+\u17D2', '\\1\u17D2', text)
-    text = re.sub(r'\u17D2\s+([\u1780-\u17A2])', '\u17D2\\1', text)
 
-    # 1. Exact corruption terms replacement FIRST (preserves raw font encodings before any reordering)
-    fixed, matches = replace_dictionary_terms(text, custom_dict)
+    # 1a. Exact corruption terms replacement FIRST on raw text (preserving exact legacy spacing/coengs)
+    fixed, matches = replace_dictionary_terms(text, custom_dict, sanitize=False)
 
-    # 2. Canonicalize Unicode syllable clusters (KES / UTN #61)
-    fixed = clean_khmer_unicode(fixed)
+    # 1b. Strip trailing dangling Coeng before whitespace/punctuation so separate words are never welded together
+    stitched = re.sub(r'\u17D2(?=[\s\n\.,;:!?\)\]]|$)', '', fixed)
+    # Stitch rogue commas between consonants and dependent vowels (e.g. ក,ុំ -> កុំ)
+    stitched = re.sub(r'([\u1780-\u17A2]),\s*([\u17B6-\u17D3])', '\\1\\2', stitched)
+    if stitched != fixed:
+        fixed, matches2 = replace_dictionary_terms(stitched, custom_dict, sanitize=False)
+        matches.extend(matches2)
+    else:
+        fixed = stitched
 
-    # 3. Algorithmic legacy glyph decoder & dynamic character repair verified by 56,840-word dictionary
+    # 2. Algorithmic legacy glyph decoder & dynamic character repair verified by 56,840-word dictionary
+    # (Runs BEFORE clean_khmer_unicode so legacy Coeng/shifter sequences like ផ្ំទ ង, បញ្ូជ ន, សម្័ពន្ធ, បូ៊េតតង, យូចអសបី៊េ are decoded intact)
     try:
         from .khmer_validator import khmer_validator
         fixed = khmer_validator.decode_and_validate(fixed)
     except Exception:
         pass
-        
+
+    # 3. Canonicalize Unicode syllable clusters (KES / UTN #61) and re-apply dictionary
+    fixed = clean_khmer_unicode(fixed)
+    fixed, matches3 = replace_dictionary_terms(fixed, custom_dict, sanitize=False)
+    matches.extend(matches3)
+
     # 4. Heuristic repairs & Coeng sanitization
     fixed, _ = repair_khmer_heuristics(fixed)
     fixed = sanitize_khmer_coeng(fixed)
@@ -2024,9 +2434,13 @@ def restore_khmer_text(text: str, custom_dict: Dict[str, str] = None) -> Tuple[s
 
     # 6. Certain phrase-level corrections for legacy-font substitutions that
     #    structure rules cannot detect (applied on already-canonical text).
-    for wrong in sorted(FINAL_PHRASE_FIXES, key=len, reverse=True):
+    all_final_fixes = dict(FINAL_PHRASE_FIXES)
+    user_file_dict = get_user_custom_dictionary()
+    if user_file_dict:
+        all_final_fixes.update(user_file_dict)
+    for wrong in sorted(all_final_fixes, key=len, reverse=True):
         if wrong in fixed:
-            fixed = fixed.replace(wrong, FINAL_PHRASE_FIXES[wrong])
+            fixed = fixed.replace(wrong, all_final_fixes[wrong])
 
     # Extract word-level differences between original text and final fixed text
     diffs = extract_word_level_differences(text, fixed)

@@ -22,11 +22,19 @@ from .models import (
     ReplacementItem,
     SlideDiff,
 )
-from .engine.dictionary import replace_dictionary_terms, repair_khmer_heuristics, clean_khmer_unicode, restore_khmer_text
+from .engine.dictionary import (
+    replace_dictionary_terms,
+    repair_khmer_heuristics,
+    clean_khmer_unicode,
+    restore_khmer_text,
+    CUSTOM_DICT_FILE,
+    get_user_custom_dictionary,
+)
 from .engine.legacy_converter import convert_limon_to_unicode, is_likely_legacy_font
 from .engine.pdf_extractor import extract_text_from_pdf
 from .engine.pdf_to_pptx import convert_pdf_to_pptx
 from .engine.pdf_processor import apply_pdf_replacements_and_fonts
+from .engine.office_exporter import export_pptx_to_pdf, export_docx_to_pdf
 from .engine.text_aligner import align_slide_with_pdf
 from .engine.gemini_restorer import restore_with_gemini
 from .engine.pptx_processor import (
@@ -39,6 +47,7 @@ from .engine.docx_processor import (
     apply_docx_replacements_and_fonts,
 )
 from .samples.sample_generator import generate_sample_files
+from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("khmer_docfixer")
@@ -85,6 +94,107 @@ def health_check():
 @app.get("/api/fonts", response_model=List[FontOption])
 def get_fonts():
     return [FontOption(**f) for f in RECOMMENDED_KHMER_FONTS]
+
+
+class CustomDictEntryRequest(BaseModel):
+    wrong: Optional[str] = None
+    right: Optional[str] = None
+    raw_lines: Optional[str] = None
+    replace_all: bool = False
+
+
+@app.get("/api/custom-dictionary")
+def get_custom_dictionary():
+    """Returns the user's custom dictionary entries and raw file content."""
+    entries_dict = get_user_custom_dictionary()
+    raw_content = ""
+    if os.path.exists(CUSTOM_DICT_FILE):
+        with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
+            raw_content = f.read()
+    entries = [{"wrong": k, "right": v} for k, v in entries_dict.items()]
+    return {
+        "entries": entries,
+        "count": len(entries),
+        "raw_content": raw_content,
+        "file_path": CUSTOM_DICT_FILE,
+    }
+
+
+@app.post("/api/custom-dictionary")
+def update_custom_dictionary(payload: CustomDictEntryRequest):
+    """Adds a new wrong -> right pair, appends bulk lines, or saves the full custom_dictionary.txt."""
+    os.makedirs(os.path.dirname(CUSTOM_DICT_FILE), exist_ok=True)
+    if payload.replace_all and payload.raw_lines is not None:
+        with open(CUSTOM_DICT_FILE, "w", encoding="utf-8") as f:
+            f.write(payload.raw_lines.strip() + "\n")
+    else:
+        lines_to_append = []
+        if payload.wrong and payload.right:
+            lines_to_append.append(f"{payload.wrong.strip()} = {payload.right.strip()}")
+        if payload.raw_lines:
+            for line in payload.raw_lines.splitlines():
+                if line.strip():
+                    lines_to_append.append(line.strip())
+        if lines_to_append:
+            existing = ""
+            if os.path.exists(CUSTOM_DICT_FILE):
+                with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
+                    existing = f.read()
+            with open(CUSTOM_DICT_FILE, "a", encoding="utf-8") as f:
+                if existing and not existing.endswith("\n"):
+                    f.write("\n")
+                for ln in lines_to_append:
+                    f.write(ln + "\n")
+
+    entries_dict = get_user_custom_dictionary()
+    raw_content = ""
+    if os.path.exists(CUSTOM_DICT_FILE):
+        with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
+            raw_content = f.read()
+    entries = [{"wrong": k, "right": v} for k, v in entries_dict.items()]
+    return {
+        "status": "ok",
+        "entries": entries,
+        "count": len(entries),
+        "raw_content": raw_content,
+    }
+
+
+@app.post("/api/custom-dictionary/upload")
+async def upload_custom_dictionary_file(file: UploadFile = File(...)):
+    """Uploads a .txt file of custom dictionary entries and appends them to custom_dictionary.txt."""
+    content_bytes = await file.read()
+    try:
+        text_content = content_bytes.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text_content = content_bytes.decode("utf-8", errors="ignore")
+
+    lines = [ln.strip() for ln in text_content.splitlines() if ln.strip() and not ln.strip().startswith("#")]
+    if lines:
+        existing = ""
+        if os.path.exists(CUSTOM_DICT_FILE):
+            with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
+                existing = f.read()
+        with open(CUSTOM_DICT_FILE, "a", encoding="utf-8") as f:
+            if existing and not existing.endswith("\n"):
+                f.write("\n")
+            for ln in lines:
+                f.write(ln + "\n")
+
+    entries_dict = get_user_custom_dictionary()
+    raw_content = ""
+    if os.path.exists(CUSTOM_DICT_FILE):
+        with open(CUSTOM_DICT_FILE, "r", encoding="utf-8") as f:
+            raw_content = f.read()
+    entries = [{"wrong": k, "right": v} for k, v in entries_dict.items()]
+    return {
+        "status": "ok",
+        "added_lines": len(lines),
+        "entries": entries,
+        "count": len(entries),
+        "raw_content": raw_content,
+    }
+
 
 
 def _process_presentation_internal(
@@ -483,7 +593,30 @@ def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundT
         fixed_filename = f"{base_name}_fixed{ext}"
         output_path = os.path.join(BASE_TEMP_DIR, session_id, fixed_filename)
 
-        if doc_type == "pdf" and getattr(payload, "format", "original") != "pptx":
+        requested_format = getattr(payload, "format", "original")
+
+        if doc_type == "pdf" and requested_format != "pptx":
+            # Primary strategy: Apply fixes to the PowerPoint representation and export to PDF via Office COM
+            # to guarantee native OpenType complex text shaping (proper Choeng ជើង, vowels, and accents).
+            output_pptx_path = meta.get("pptx_path")
+            exported_pdf = False
+            if output_pptx_path and os.path.exists(output_pptx_path):
+                prs = Presentation(output_pptx_path)
+                apply_replacements_and_fonts(prs, valid_replacements, target_font=target_font)
+                fixed_pptx_path = os.path.join(BASE_TEMP_DIR, session_id, f"{base_name}_temp_for_pdf.pptx")
+                prs.save(fixed_pptx_path)
+                exported_pdf = export_pptx_to_pdf(fixed_pptx_path, output_path)
+
+            if exported_pdf and os.path.exists(output_path):
+                logger.info(f"Session {session_id}: exported restored PPTX to PDF using native OpenType complex text shaping: {fixed_filename}")
+                return FileResponse(
+                    output_path,
+                    filename=fixed_filename,
+                    media_type="application/pdf"
+                )
+
+            # Fallback strategy: In-place PyMuPDF redaction/insertion
+            logger.warning(f"Session {session_id}: Office PDF export unavailable. Falling back to PyMuPDF in-place restoration.")
             pdf_path = meta.get("pdf_path") or meta["doc_path"]
             apply_pdf_replacements_and_fonts(
                 pdf_path=pdf_path,
@@ -491,7 +624,6 @@ def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundT
                 replacements=valid_replacements,
                 target_font=target_font
             )
-            logger.info(f"Session {session_id}: applied fixes directly to PDF document {fixed_filename}.")
             return FileResponse(
                 output_path,
                 filename=fixed_filename,
@@ -526,6 +658,17 @@ def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundT
             )
             logger.info(f"Session {session_id}: applied fixes across {paragraphs_updated} DOCX paragraphs.")
             doc.save(output_path)
+
+            if requested_format == "pdf":
+                pdf_filename = f"{base_name}_fixed.pdf"
+                pdf_output_path = os.path.join(BASE_TEMP_DIR, session_id, pdf_filename)
+                if export_docx_to_pdf(output_path, pdf_output_path):
+                    return FileResponse(
+                        pdf_output_path,
+                        filename=pdf_filename,
+                        media_type="application/pdf"
+                    )
+
             media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         else:
             original_pptx_path = meta.get("pptx_path") or meta["doc_path"]
@@ -533,6 +676,17 @@ def apply_and_download(payload: ApplyFixesRequest, background_tasks: BackgroundT
             runs_updated = apply_replacements_and_fonts(prs, valid_replacements, target_font=target_font)
             logger.info(f"Session {session_id}: applied fixes across {runs_updated} PPTX text runs.")
             prs.save(output_path)
+
+            if requested_format == "pdf":
+                pdf_filename = f"{base_name}_fixed.pdf"
+                pdf_output_path = os.path.join(BASE_TEMP_DIR, session_id, pdf_filename)
+                if export_pptx_to_pdf(output_path, pdf_output_path):
+                    return FileResponse(
+                        pdf_output_path,
+                        filename=pdf_filename,
+                        media_type="application/pdf"
+                    )
+
             media_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 
         return FileResponse(

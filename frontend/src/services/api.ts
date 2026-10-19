@@ -94,3 +94,48 @@ export async function cleanupSession(sessionId: string): Promise<void> {
     console.warn('Session cleanup failed:', e);
   }
 }
+
+export interface CustomDictEntry {
+  wrong: string;
+  right: string;
+}
+
+export interface CustomDictResponse {
+  entries: CustomDictEntry[];
+  count: number;
+  raw_content: string;
+  file_path?: string;
+}
+
+export async function getCustomDictionary(): Promise<CustomDictResponse> {
+  const res = await fetch(`${API_BASE}/custom-dictionary`);
+  if (!res.ok) throw new Error('Failed to load custom dictionary');
+  return await res.json();
+}
+
+export async function updateCustomDictionary(payload: {
+  wrong?: string;
+  right?: string;
+  raw_lines?: string;
+  replace_all?: boolean;
+}): Promise<CustomDictResponse> {
+  const res = await fetch(`${API_BASE}/custom-dictionary`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to update custom dictionary');
+  return await res.json();
+}
+
+export async function uploadCustomDictionaryFile(file: File): Promise<CustomDictResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API_BASE}/custom-dictionary/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) throw new Error('Failed to upload dictionary file');
+  return await res.json();
+}
+

@@ -1,4 +1,4 @@
-import { FileText, Globe } from 'lucide-react';
+import { BookOpen, FileText, Globe } from 'lucide-react';
 import type { Language } from '../types';
 import { translations } from '../i18n/translations';
 
@@ -6,6 +6,7 @@ interface NavbarProps {
   language: Language;
   onLanguageToggle: () => void;
   onLogoClick?: () => void;
+  onOpenDictionary?: () => void;
   isLoading?: boolean;
 }
 
@@ -13,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   language,
   onLanguageToggle,
   onLogoClick,
+  onOpenDictionary,
 }) => {
   const t = translations[language];
 
@@ -35,7 +37,26 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         {/* Right Actions */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Custom Dictionary Button */}
+          {onOpenDictionary && (
+            <button
+              onClick={onOpenDictionary}
+              type="button"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition cursor-pointer border border-indigo-200"
+              title={
+                language === 'km'
+                  ? 'បន្ថែម ឬ Upload ពាក្យខុស'
+                  : 'Add or Upload Misspelled Words'
+              }
+            >
+              <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+              <span>
+                {language === 'km' ? 'បន្ថែមពាក្យខុស' : 'Custom Dictionary'}
+              </span>
+            </button>
+          )}
+
           {/* Language Switcher */}
           <button
             onClick={onLanguageToggle}
@@ -50,3 +71,4 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+

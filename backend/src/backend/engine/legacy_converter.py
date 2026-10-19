@@ -122,14 +122,19 @@ def is_likely_legacy_font(font_name: Optional[str], text: Optional[str]) -> bool
                 
     if not text:
         return False
+
+    # If the text already contains Khmer Unicode characters (U+1780..U+17FF),
+    # it is NOT a pure 8-bit Limon string (mixed glyph leaks are handled by transliterate_mixed_glyphs).
+    if any(0x1780 <= ord(c) <= 0x17FF for c in text):
+        return False
         
     # Check for direct legacy words
     for kw in COMMON_LIMON_WORDS:
         if kw in text:
             return True
             
-    # Check for presence of Limon subscript characters (ASCII 0x80-0xFF range common in Limon)
-    limon_subscript_chars = set(LIMON_SUBSCRIPTS.keys())
+    # Check for presence of Limon subscript characters (ASCII 0x80-0xFF range common in Limon, excluding ASCII 'J')
+    limon_subscript_chars = set(LIMON_SUBSCRIPTS.keys()) - {'J'}
     has_subscript = any(c in limon_subscript_chars for c in text)
     if has_subscript:
         return True
@@ -252,7 +257,7 @@ def convert_limon_to_unicode(text: str) -> str:
 MIXED_GLYPH_TABLE: Dict[str, str] = {
     '3': 'ឧ', 'ñ': 'ក', 'b': 'ព', 'U': 'ប',
     'F': 'យ', 'f': 'រ', 'R': 'ង', 'P': 'ន',
-    'k': 'ហ', '6': 'ណ', '˘': '័', '˜': '៊', '~': '៊'
+    'k': 'ហ', '6': 'ណ', '˘': '័', '˜': '៊', '~': '៊', 'A': 'ព'
 }
 
 def transliterate_mixed_glyphs(text: str) -> str:
@@ -270,18 +275,26 @@ def transliterate_mixed_glyphs(text: str) -> str:
     s = re.sub(r'3Uñ', 'ឧបក', s)
     s = re.sub(r'6[\'’]', 'ណ៍', s)
     s = re.sub(r'AA(?=[ក-អ\u17B6-\u17D3])', 'ពព', s)
-    s = re.sub(r'(?:^|(?<=[\s\n]))A(?=[ក-អ\u17B6-\u17D3])', 'ព្យ', s)
+    s = re.sub(r'A(?=ាបាទ)', 'ព្យ', s)
     s = re.sub(r'PមPេះ', 'មេរៀននេះ', s)
     s = re.sub(r'PិR', 'និង', s)
     s = re.sub(r'PឹR', 'នឹង', s)
     s = re.sub(r'ការការbរ', 'ការការពារ', s)
     s = re.sub(r'ទិP[នS]P[˘័]F', 'ទិន្នន័យ', s)
+    s = re.sub(r'FfR', 'យរង', s)
     
-    # Single mixed characters inside or adjacent to Khmer characters
+    # Single mixed characters inside or adjacent to actual Khmer letters/vowels (excluding punctuation \u17D4-\u17DA)
+    # Guard against matching when adjacent to non-legacy Latin letters (e.g. USB, ISP, Excel)
     def _rep_char(m):
         c = m.group(0)
         return MIXED_GLYPH_TABLE.get(c, c)
         
-    s = re.sub(r'(?<=[\u1780-\u17FF])[3ñbUFfRPk6˘˜~]|[3ñbUFfRPk6˘˜~](?=[\u1780-\u17FF])', _rep_char, s)
+    non_legacy_latin = r'[a-eg-jl-oq-zB-EG-OQ-TV-Z]'
+    pattern = re.compile(
+        rf'(?<!{non_legacy_latin})(?<=[\u1780-\u17D3])[3ñbUFfRPk6˘˜~A](?!{non_legacy_latin})'
+        rf'|(?<!{non_legacy_latin})[3ñbUFfRPk6˘˜~A](?=[\u1780-\u17D3])(?!{non_legacy_latin})'
+    )
+    for _ in range(2):
+        s = pattern.sub(_rep_char, s)
     return s
 

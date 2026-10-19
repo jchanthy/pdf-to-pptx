@@ -1,0 +1,41 @@
+# ==============================================================================
+# Khmer DocFixer — User Custom Dictionary (custom_dictionary.txt)
+# ==============================================================================
+# How to add words when you see a misspelled or corrupted word in the result:
+#
+# Format 1 (using =):
+#   incorrect_word = correct_word
+#
+# Format 2 (using ->):
+#   incorrect_word -> correct_word
+#
+# Format 3 (using parentheses):
+#   incorrect_word (correct_word)
+#
+# Format 4 (single valid word / proper name on its own line so spellcheck keeps it):
+#   សុហ្វី
+#
+# Note: Changes saved to this file are applied AUTOMATICALLY on your next upload!
+# ==============================================================================
+
+# --- User-reported Corrections ---
+មា"លាវ = ម៉ាល់វែរ
+មា"ល់វែ = ម៉ាល់វែរ
+មា"លវោ = ម៉ាល់វែរ
+មា"លីវ = ម៉ាល់វែរ
+មា"លៀវ = ម៉ាល់វែរ
+ធី សុហវី = ធី សុហ្វី
+កញ្ញា ធី សុហវី = កញ្ញា ធី សុហ្វី
+សុហវី = សុហ្វី
+មតើក,ុំពយទ័រ = តើកុំព្យូទ័រ
+កុំ Aយទ័រ = កុំព្យូទ័រ
+Aយទ័រ = ព្យូទ័រ
+ពយទ័រ = ព្យូទ័រ
+ក,ុំ = កុំ
+
+# --- Valid Proper Names & Modern Loanwords ---
+សុហ្វី
+ព្យូទ័រ
+ម៉ាល់វែរ
+ស្ប៉ាយវែរ
+វគ្គបន្តុះបណ្តាល = វគ្គបណ្ដុះបណ្តាល

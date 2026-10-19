@@ -17,6 +17,7 @@ interface DownloadStepProps {
   documentType?: 'pptx' | 'docx' | 'pdf';
   onDownloadAgain: () => void;
   onDownloadAsPptx?: () => void;
+  onDownloadAsPdf?: () => void;
   onStartOver: () => void;
   onPreviewEdit: () => void;
   isLoading?: boolean;
@@ -30,6 +31,7 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
   documentType = 'pptx',
   onDownloadAgain,
   onDownloadAsPptx,
+  onDownloadAsPdf,
   onStartOver,
   onPreviewEdit,
   isLoading,
@@ -116,6 +118,20 @@ export const DownloadStep: React.FC<DownloadStepProps> = ({
             <FileText className="w-3.5 h-3.5 text-slate-500" />
             <span className="font-khmer">
               {language === 'km' ? 'ទាញយកជា PowerPoint (.pptx)' : 'Download as PowerPoint (.pptx)'}
+            </span>
+          </button>
+        )}
+
+        {/* Secondary PDF option when user uploaded a PPTX or DOCX */}
+        {documentType !== 'pdf' && onDownloadAsPdf && (
+          <button
+            onClick={onDownloadAsPdf}
+            disabled={isLoading}
+            className="w-full inline-flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 text-slate-500" />
+            <span className="font-khmer">
+              {language === 'km' ? 'ទាញយកជា PDF (.pdf)' : 'Download as PDF (.pdf)'}
             </span>
           </button>
         )}
