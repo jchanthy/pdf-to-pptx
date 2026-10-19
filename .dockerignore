@@ -1,0 +1,12 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+temp_sessions
+frontend/node_modules
+frontend/dist
+.env
+.oxlintrc.json

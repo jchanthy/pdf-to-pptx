@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: khmer-docfixer-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: TEMP_DIR
+        value: /tmp/khmer_docfixer_sessions

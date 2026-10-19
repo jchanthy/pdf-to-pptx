@@ -1,6 +1,18 @@
 import type { FontOption, ProcessOptions, ProcessResponse, ReplacementItem } from '../types';
 
-const API_BASE = '/api';
+const RAW_API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+export const API_BASE = RAW_API_URL
+  ? (RAW_API_URL.endsWith('/api') ? RAW_API_URL : `${RAW_API_URL.replace(/\/$/, '')}/api`)
+  : '/api';
+
+export async function pingBackendHealth(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/health`);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 export async function getFonts(): Promise<FontOption[]> {
   try {
