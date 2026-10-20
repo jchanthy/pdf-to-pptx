@@ -261,10 +261,6 @@ export function App() {
         {currentStep === 3 && processResult && (
           <DownloadStep
             language={language}
-            fonts={fonts}
-            targetFont={options.target_font}
-            onTargetFontChange={(font) => setOptions((prev) => ({ ...prev, target_font: font }))}
-            onFontAdded={handleFontAdded}
             totalSlides={processResult.total_slides}
             totalFixed={
               savedReplacements.filter(
