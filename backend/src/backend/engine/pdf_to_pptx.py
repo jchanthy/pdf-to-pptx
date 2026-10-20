@@ -285,13 +285,6 @@ def convert_pdf_to_pptx(
         full_slide_original: List[str] = []
         full_slide_corrected: List[str] = []
         slide_title = ""
-        
-        # Render unredacted pixmap for high-fidelity Khmer OCR
-        pix_ocr = page.get_pixmap(dpi=150)
-        raw_img_path = os.path.join(temp_dir, f"raw_page_{page_idx+1}.png")
-        pix_ocr.save(raw_img_path)
-        scale_x = page_width / pix_ocr.width
-        scale_y = page_height / pix_ocr.height
 
         # 1. Extract embedded content images as standalone editable PowerPoint picture shapes
         embedded_images = []
@@ -356,10 +349,10 @@ def convert_pdf_to_pptx(
                 except Exception:
                     pass
         
-        # Crisp, fast 120 DPI background rendering
-        pix = p_bg.get_pixmap(dpi=120)
-        bg_image_path = os.path.join(temp_dir, f"bg_slide_{page_idx+1}.png")
-        pix.save(bg_image_path)
+        # Crisp, fast, optimized background rendering (100 DPI JPEG Q82)
+        pix = p_bg.get_pixmap(dpi=100, alpha=False)
+        bg_image_path = os.path.join(temp_dir, f"bg_slide_{page_idx+1}.jpg")
+        pix.pil_save(bg_image_path, format="JPEG", quality=82, optimize=True)
         
         # Insert pristine background canvas
         slide.shapes.add_picture(

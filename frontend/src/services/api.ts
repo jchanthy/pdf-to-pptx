@@ -54,7 +54,6 @@ export async function uploadAndProcess(
   const formData = new FormData();
   if (docFile) {
     formData.append('file', docFile);
-    formData.append('pptx_file', docFile);
   }
   if (pdfFile) {
     formData.append('pdf_file', pdfFile);
